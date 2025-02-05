@@ -31,7 +31,7 @@ function answerQuestion(){}
       <button
         v-for="choice in currentQuestion.choices"
         :key="choice.text"
-        @click="answerQuestion(choice.correct)"
+        @click="answerQuestion()"
       >
         {{ choice.text }}
       </button>
