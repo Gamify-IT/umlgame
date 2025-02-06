@@ -77,3 +77,18 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+.scene-forest {
+  background: url('src/assets/Images/Scenes/Forest.png') no-repeat center center;
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+}
+
+.scene-river {
+  background: url('src/assets/Images/Scenes/Water.png') no-repeat center center;
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+}

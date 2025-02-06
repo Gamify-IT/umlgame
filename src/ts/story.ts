@@ -3,6 +3,8 @@ export interface StoryNode {
     text: string;
     choices?: { text: string; nextId: string }[];
     questionId?: string;
+    nextIdAfterQuestion?: string; 
+    scene?: string;
   }
   
   export const storyData: StoryNode[] = [
@@ -21,11 +23,14 @@ export interface StoryNode {
         { text: "Mit ihm sprechen", nextId: "talk_guard" },
         { text: "Ihn umgehen", nextId: "sneak_guard" },
       ],
+      scene: "river",
     },
     {
         id: "talk_guard",
         text: "Am Tor des Schlosses stellt dir der Wächter eine Frage.",
     questionId: "math1",
+    nextIdAfterQuestion: "village",
+    
       },
     {
       id: "village",
