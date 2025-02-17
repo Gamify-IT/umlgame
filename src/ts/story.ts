@@ -10,27 +10,85 @@ export interface StoryNode {
   export const storyData: StoryNode[] = [
     {
       id: "start",
-      text: "Du wachst in einem dunklen Wald auf. Wohin gehst du?",
+      text: "You wake up in a dark forest. Where do you want to go?",
       choices: [
-        { text: "Nach Norden zum Schloss", nextId: "castle" },
-        { text: "Nach Süden ins Dorf", nextId: "village" },
+        { text: "North to the castle", nextId: "river" },
+        { text: "South to the village", nextId: "village" },
       ],
     },
     {
-      id: "castle",
-      text: "Du erreichst das Schloss. Ein Torwächter stoppt dich. Was tust du?",
+      id: "river",
+      text: "After a long journey you finally make it out of the woods. There is a big river dividing your path. It seems that there is a bridge guarded by a knight. What will you do?",
       choices: [
-        { text: "Mit ihm sprechen", nextId: "talk_guard" },
-        { text: "Ihn umgehen", nextId: "sneak_guard" },
+        { text: "Talk to the knight", nextId: "talk_knight" },
+        { text: "Search for another way", nextId: "sneak_guard" },
       ],
       scene: "river",
     },
     {
+      id: "talk_knight",
+      text: "'If you want to pass this bridge you first need to solve my riddle.'",
+  questionId: "2",
+  nextIdAfterQuestion: "fog",
+  scene: "river",
+  
+    },
+    {
+      id: "fog",
+      text: "You crossed the river. A thick fog spreads. In the distant you can see the castle but when you try to head towards the castle... you hear a faint sound in the distance. It sounds like a weeping girl asking for help. What will you do?",
+      choices: [
+        { text: "Follow the voice", nextId: "voice_fog" },
+        { text: "Go straight to the castle", nextId: "castle" },
+      ],
+  scene: "river",
+  
+    },
+    {
+      id: "voice_fog",
+      text: "You make your way through the fog. It seems like you have been going for hours without reaching anywhere. Suddenly the fog seems to be moving and form a shape... ",
+      choices: [
+        { text: "Continue", nextId: "voice_fog2" },
+       
+      ],
+      scene: "river",
+    },
+    {
+      id: "voice_fog2",
+      text: "'Hero... you finally appeared... solve the riddle... to free my soul...",
+      questionId: "1",
+      nextIdAfterQuestion: "way_castle",
+  scene: "river",
+    },
+    {
+        id: "way_castle",
+        text: "The fog suddenly cleared itself and the girl is nowhere to be seen. You decide to continue your way to the castle",
+    choices: [
+      { text: "Continue", nextId: "castle_entrance" },
+     
+    ],
+    scene: "way",
+      },
+      {
+        id: "castle_entrance",
+        text: "The entrance is protected by a guard. What will you do?",
+   
+    choices: [
+      { text: "Talk to the guard", nextId: "talk_guard" },
+      { text: "Sneak the guard", nextId: "sneak_guard" },
+     
+    ],
+    scene: "castle-outside",
+      },
+      {
         id: "talk_guard",
-        text: "Am Tor des Schlosses stellt dir der Wächter eine Frage.",
-    questionId: "math1",
-    nextIdAfterQuestion: "village",
-    
+        text: "'If you want to pass inside you must first tell me the password.'",
+   
+    choices: [
+      { text: "Talk to the guard", nextId: "talk_guard" },
+      { text: "Sneak the guard", nextId: "sneak_guard" },
+     
+    ],
+    scene: "castle-outside",
       },
     {
       id: "village",

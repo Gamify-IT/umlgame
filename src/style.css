@@ -24,11 +24,13 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: block;
 }
+
 
 h1 {
   font-size: 3.2em;
@@ -59,11 +61,16 @@ button:focus-visible {
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -92,3 +99,17 @@ button:focus-visible {
   width: 100vw;
   height: 100vh;
 }
+.scene-way {
+  background: url('src/assets/Images/Scenes/Way.png') no-repeat center center;
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+}
+.scene-castle-outside {
+  background: url('src/assets/Images/Scenes/CastleOutside.png') no-repeat center center;
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+}
+
+

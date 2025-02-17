@@ -6,7 +6,7 @@ export interface Question {
   
   export const dummyQuestions: Question[] = [
     {
-      id: "math1",
+      id: "1",
       text: "Was ist 2 + 2?",
       choices: [
         { text: "3", correct: false },
@@ -15,7 +15,7 @@ export interface Question {
       ],
     },
     {
-      id: "color1",
+      id: "2",
       text: "Welche Farbe hat der Himmel?",
       choices: [
         { text: "Blau", correct: true },
