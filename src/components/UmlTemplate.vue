@@ -1,23 +1,112 @@
 <script setup lang="ts">
 import { dia, shapes } from '@joint/core';
-import { onMounted, ref, defineProps } from "vue"
+import { onMounted, ref, defineProps, nextTick } from "vue";
 
 const namespace = shapes;
-
 const graph = new dia.Graph({}, { cellNamespace: namespace });
 
-const paper = new dia.Paper({
-    el: document.getElementById('paper'),
-    model: graph,
-    width: 300,
-    height: 300,
-    background: { color: '#F5F5F5' },
-    cellViewNamespace: namespace
-});
+const paperContainer = ref<HTMLElement | null>(null);
+const paletteContainer = ref<HTMLElement | null>(null);
 
 const props = defineProps<{ questionId: string }>();
+
+onMounted(() => {
+  nextTick(() => {
+    if (paperContainer.value) {
+      const paper = new dia.Paper({
+        el: paperContainer.value,
+        model: graph,
+        width: 400,
+        height: 400,
+        background: { color: '#F5F5F5' },
+        cellViewNamespace: namespace
+      });
+
+      // Enable dragging elements from palette to the graph
+      if (paletteContainer.value) {
+        paletteContainer.value.querySelectorAll('.palette-item').forEach((item) => {
+          item.addEventListener('dragstart', (event) => {
+            (event as DragEvent).dataTransfer?.setData('type', item.getAttribute('data-type') || '');
+          });
+        });
+      }
+
+      // Handle dropping elements onto the paper
+      paperContainer.value.addEventListener('dragover', (event) => {
+        event.preventDefault();
+      });
+
+      paperContainer.value.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const type = (event as DragEvent).dataTransfer?.getData('type');
+
+        if (type) {
+          const position = paper.pageToLocalPoint({ x: event.clientX, y: event.clientY });
+
+          let element;
+          if (type === 'rectangle') {
+            element = new shapes.standard.Rectangle({
+              position,
+              size: { width: 80, height: 40 },
+              attrs: {  label: { text: 'Rectangle' } }
+            });
+          } else if (type === 'circle') {
+            element = new shapes.standard.Circle({
+              position,
+              size: { width: 50, height: 50 },
+              attrs: { label: { text: 'Circle' } }
+            });
+          }
+
+          if (element) {
+            graph.addCell(element);
+          }
+        }
+      });
+    }
+  });
+});
 </script>
 
 <template>
-    <div id="paper" style="width: 500px; height: 500px; border: 1px solid black;"></div>
-  </template>
+  <div class="uml-container">
+    
+    <div ref="paletteContainer" class="palette">
+      <div class="palette-item" data-type="rectangle" draggable="true">Rectangle</div>
+      <div class="palette-item" data-type="circle" draggable="true">Circle</div>
+    </div>
+
+   
+    <div ref="paperContainer" class="paper-container"></div>
+  </div>
+</template>
+
+<style scoped>
+.uml-container {
+  display: flex;
+  gap: 20px;
+}
+
+.palette {
+  width: 150px;
+  background: #ddd;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.palette-item {
+  padding: 10px;
+  margin-bottom: 5px;
+  background: #fff;
+  text-align: center;
+  cursor: grab;
+  border: 1px solid #aaa;
+}
+
+.paper-container {
+  width: 400px;
+  height: 400px;
+  border: 2px solid #000;
+  background: #f5f5f5;
+}
+</style>
