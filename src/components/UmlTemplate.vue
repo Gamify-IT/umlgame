@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { dia, shapes } from '@joint/core';
-import { onMounted, ref, defineProps, nextTick } from "vue";
+import { onMounted, ref, defineProps, nextTick, watch } from "vue";
 
 const namespace = shapes;
 const graph = new dia.Graph({}, { cellNamespace: namespace });
-
 const paperContainer = ref<HTMLElement | null>(null);
 const paletteContainer = ref<HTMLElement | null>(null);
-
 const props = defineProps<{ questionId: string }>();
+const selectedElement = ref<dia.Element | null>(null);
+const labelText = ref('');
+
+function updateLabel() {
+  if (selectedElement.value) {
+    selectedElement.value.attr('label/text', labelText.value);
+  }
+}
 
 onMounted(() => {
   nextTick(() => {
@@ -22,6 +28,20 @@ onMounted(() => {
         cellViewNamespace: namespace
       });
 
+      // Property editor to change the text
+      paper.on('element:pointerclick', (elementView) => {
+      selectedElement.value = elementView.model;
+      labelText.value = elementView.model.attr('label/text') || '';
+      });
+
+      watch(selectedElement, (el) => {
+        if (el) {
+      labelText.value = el.attr('label/text') || '';
+        }
+      });
+  
+
+  
       // Enable dragging elements from palette to the graph
       if (paletteContainer.value) {
         paletteContainer.value.querySelectorAll('.palette-item').forEach((item) => {
@@ -63,8 +83,11 @@ onMounted(() => {
           }
         }
       });
+      
     }
   });
+
+  
 });
 </script>
 
@@ -75,9 +98,14 @@ onMounted(() => {
       <div class="palette-item" data-type="rectangle" draggable="true">Rectangle</div>
       <div class="palette-item" data-type="circle" draggable="true">Circle</div>
     </div>
-
-   
     <div ref="paperContainer" class="paper-container"></div>
+    <div class="right" v-if="selectedElement">
+      
+      <label>
+        Text:
+        <input type="text" v-model="labelText" @input="updateLabel" />
+      </label>
+    </div>
   </div>
 </template>
 
