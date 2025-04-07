@@ -111,5 +111,18 @@ button:focus-visible {
   width: 100vw;
   height: 100vh;
 }
+.scene-hallway {
+  background: url('src/assets/Images/Scenes/Hallway.png') no-repeat center center;
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+}
+.scene-dungeon {
+  background: url('src/assets/Images/Scenes/Dungeon.png') no-repeat center center;
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+}
+
 
 
