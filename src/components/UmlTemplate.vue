@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { dia, shapes } from '@joint/core';
+import {dia, shapes, util} from '@joint/core';
 import { onMounted, ref, defineProps, nextTick, watch } from "vue";
 
 const namespace = shapes;
@@ -9,7 +9,58 @@ const paletteContainer = ref<HTMLElement | null>(null);
 const props = defineProps<{ questionId: string }>();
 const selectedElement = ref<dia.Element | null>(null);
 const labelText = ref('');
+const stuff = ref('');
 const deleteButtonPos = ref<{ x: number; y: number } | null>(null);
+
+class custRect extends shapes.standard.Rectangle {
+  defaults() {
+    return {
+      ...super.defaults,
+      type: 'Rect',
+      size: {
+        width: 80,
+        height: 40
+      },
+      attrs: {
+        body: {
+          width: 'calc(w)',
+          height: 'calc(h)',
+          fill: 'white',
+          strokeWidth: 2,
+          stroke: 'black'
+        },
+        label: {
+          text: '1st',
+          textVerticalAnchor: 'middle',
+          textAnchor: 'middle',
+          fontSize: 14,
+          x: 'calc(w/2)',
+          y: 'calc(h/2)'
+        },
+        secondaryLabel: {
+          text: '2nd',
+          textVerticalAnchor: 'middle',
+          textAnchor: 'middle',
+          fontSize: 14,
+          x: 'calc(w/2)',
+          y: 'calc(h/1.25)'
+        }
+      }
+    };
+  }
+
+  preinitialize() {
+    this.markup = util.svg/* xml */ `
+             <rect @selector='body' />
+             <text @selector='label' />
+             <text @selector='secondaryLabel' />
+         `;
+  }
+}
+
+
+
+
 
 function updateLabel() {
   if (selectedElement.value) {
@@ -22,6 +73,12 @@ function deleteSelectedElement() {
     selectedElement.value.remove();
     selectedElement.value = null;
     deleteButtonPos.value = null;
+  }
+}
+
+function doStuff() {
+  if (selectedElement.value) {
+    selectedElement.value.attr('secondaryLabel/text', stuff.value);
   }
 }
 
@@ -77,11 +134,7 @@ onMounted(() => {
 
           let element;
           if (type === 'rectangle') {
-            element = new shapes.standard.Rectangle({
-              position,
-              size: { width: 80, height: 40 },
-              attrs: { label: { text: 'Rectangle' } }
-            });
+            element = new custRect();
           } else if (type === 'circle') {
             element = new shapes.standard.Circle({
               position,
@@ -112,9 +165,13 @@ onMounted(() => {
         <button class="delete-button" @click="deleteSelectedElement">
           Delete Object
         </button>
-        <label>
+        <label class="label">
           Text:
           <input type="text" v-model="labelText" @input="updateLabel" />
+        </label>
+        <label class="label">
+          Text 2:
+          <input type="text" v-model="stuff" @input="doStuff" />
         </label>
       </div>
     </div>
@@ -122,6 +179,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
+
+
 .uml-container {
   display: flex;
   gap: 20px;
@@ -145,6 +204,7 @@ onMounted(() => {
   text-align: center;
   cursor: grab;
   border: 1px solid #aaa;
+  color: black;
 }
 
 .paper-container {
@@ -171,5 +231,8 @@ onMounted(() => {
   gap: 10px;
 }
 
+.label {
+  color: black;
+}
 
 </style>
