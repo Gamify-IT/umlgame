@@ -109,23 +109,14 @@ onMounted(() => {
       </div>
       <div ref="paperContainer" class="paper-container"></div>
       <div class="right" v-if="selectedElement">
+        <button class="delete-button" @click="deleteSelectedElement">
+          Delete Object
+        </button>
         <label>
           Text:
           <input type="text" v-model="labelText" @input="updateLabel" />
         </label>
       </div>
-    </div>
-
-    <div
-      v-if="deleteButtonPos"
-      class="delete-button"
-      :style="{
-        left: deleteButtonPos.x + 'px',
-        top: deleteButtonPos.y + 'px'
-      }"
-      @click="deleteSelectedElement"
-    >
-      Delete
     </div>
   </div>
 </template>
@@ -164,13 +155,21 @@ onMounted(() => {
 }
 
 .delete-button {
-  position: absolute;
-  background-color: red;
+  background-color: rgb(208, 50, 50);
   color: white;
-  padding: 4px 8px;
+  padding: 6px 12px;
+  border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
-  z-index: 10;
+  font-size: 10px;
+  margin-bottom: 10px;
 }
+
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
 </style>
