@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {dia, shapes, util} from '@joint/core';
 import { onMounted, ref, defineProps, nextTick, watch } from "vue";
+import {BFormInput, BFormTextarea} from "bootstrap-vue-3";
 
 const namespace = shapes;
 const graph = new dia.Graph({}, { cellNamespace: namespace });
@@ -10,6 +11,7 @@ const props = defineProps<{ questionId: string }>();
 const selectedElement = ref<dia.Element | null>(null);
 const labelText = ref('');
 const stuff = ref('');
+const stuff2 = ref('');
 const deleteButtonPos = ref<{ x: number; y: number } | null>(null);
 
 class custRect extends shapes.standard.Rectangle {
@@ -18,8 +20,8 @@ class custRect extends shapes.standard.Rectangle {
       ...super.defaults,
       type: 'Rect',
       size: {
-        width: 80,
-        height: 40
+        width: 100,
+        height: 80
       },
       attrs: {
         body: {
@@ -33,17 +35,25 @@ class custRect extends shapes.standard.Rectangle {
           text: '1st',
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
-          fontSize: 14,
-          x: 'calc(w/2)',
-          y: 'calc(h/2)'
+          fontSize: 12,
+          x: 'calc(w/3)', // no clue how to choose these values, but trial and error worked it out
+          y: 'calc(h/3)'
         },
         secondaryLabel: {
           text: '2nd',
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
-          fontSize: 14,
-          x: 'calc(w/2)',
-          y: 'calc(h/1.25)'
+          fontSize: 12,
+          x: 'calc(w/3)',
+          y: 'calc(h/2)'
+        },
+        thirdLabel: {
+          text: '3nd',
+          textVerticalAnchor: 'middle',
+          textAnchor: 'middle',
+          fontSize: 12,
+          x: 'calc(w/3)',
+          y: 'calc(h/1.5)'
         }
       }
     };
@@ -54,11 +64,10 @@ class custRect extends shapes.standard.Rectangle {
              <rect @selector='body' />
              <text @selector='label' />
              <text @selector='secondaryLabel' />
+             <text @selector='thirdLabel' />
          `;
   }
 }
-
-
 
 
 
@@ -79,6 +88,12 @@ function deleteSelectedElement() {
 function doStuff() {
   if (selectedElement.value) {
     selectedElement.value.attr('secondaryLabel/text', stuff.value);
+  }
+}
+
+function doStuff2() {
+  if (selectedElement.value) {
+    selectedElement.value.attr('thirdLabel/text', stuff2.value);
   }
 }
 
@@ -134,7 +149,7 @@ onMounted(() => {
 
           let element;
           if (type === 'rectangle') {
-            element = new custRect();
+            element = new custRect({position});
           } else if (type === 'circle') {
             element = new shapes.standard.Circle({
               position,
@@ -162,16 +177,20 @@ onMounted(() => {
       </div>
       <div ref="paperContainer" class="paper-container"></div>
       <div class="right" v-if="selectedElement">
-        <button class="delete-button" @click="deleteSelectedElement">
+        <b-button size="sm" variant="danger" @click="deleteSelectedElement">
           Delete Object
-        </button>
+        </b-button>
+        <b-label class="label">
+          Classname:
+          <b-form-input v-model="labelText" @input="updateLabel" />
+        </b-label>
         <label class="label">
-          Text:
-          <input type="text" v-model="labelText" @input="updateLabel" />
+          Attributes:
+          <b-form-textarea v-model="stuff" @input="doStuff" />
         </label>
         <label class="label">
-          Text 2:
-          <input type="text" v-model="stuff" @input="doStuff" />
+          Methods:
+          <b-form-textarea v-model="stuff2" @input="doStuff2" />
         </label>
       </div>
     </div>
