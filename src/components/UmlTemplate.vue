@@ -47,7 +47,7 @@ class custRect extends shapes.standard.Rectangle {
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
           fontSize: 12,
-          x: 'calc(w/3)',
+          x: 'calc(w/3)',  // no clue how to choose these values, but trial and error worked it out
           y: 'calc(h/3)'
         },
         secondaryLabel: {
@@ -55,7 +55,7 @@ class custRect extends shapes.standard.Rectangle {
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
           fontSize: 12,
-          x: 'calc(w/3)',  // no clue how to choose these values, but trial and error worked it out
+          x: 'calc(w/3)', 
           y: 'calc(h/2)'
         },
         thirdLabel: {
@@ -115,8 +115,45 @@ function handleElementClick(elementView: dia.ElementView) {
       console.log("Start-Objekt ausgewählt:", clickedElement);
     } else {
       link = new shapes.standard.Link();
-      link.source(linkSourceElement);
-      link.target(clickedElement);
+
+      if (linkSourceElement === clickedElement) {
+        const bbox = linkSourceElement.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const topY = bbox.y - 30;
+
+        const loopVertices = [
+          { x: centerX - 20, y: topY },
+          { x: centerX + 20, y: topY }
+        ];
+
+        link.source({ id: linkSourceElement.id, anchor: { name: 'left' } });
+        link.target({ id: linkSourceElement.id, anchor: { name: 'right' } });
+
+        link.set('vertices', loopVertices);
+        link.connector('smooth');
+
+        graph.addCell(link);
+
+        linkSourceElement.on('change:position', () => {
+          if (!linkSourceElement) return;
+          const bbox = linkSourceElement.getBBox();
+          const newCenterX = bbox.x + bbox.width / 2;
+          const newTopY = bbox.y - 30;
+
+          const newLoopVertices = [
+            { x: newCenterX - 20, y: newTopY },
+            { x: newCenterX + 20, y: newTopY }
+          ];
+
+          if (link) {
+            link.set('vertices', newLoopVertices);
+          }
+        });
+
+      } else {
+        link.source(linkSourceElement!); 
+        link.target(clickedElement);
+      }
 
       link.attr({
         line: {
@@ -183,6 +220,8 @@ function handleElementClick(elementView: dia.ElementView) {
     stuff2.value = clickedElement.attr('thirdLabel/text');
   }
 }
+
+
 
 function deleteAllRelations() {
   if (!selectedElement.value) return;
