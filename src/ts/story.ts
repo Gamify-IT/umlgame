@@ -179,7 +179,7 @@ export interface StoryNode {
       text: "Your answer pleases her. A dark energy coils around you, binding your soul to hers.\n\n'Yes... I see the darkness in you,' she whispers. 'Let us rule together.'\n\nAnd so you do ushering in an age of fear.\n\n**THE END – You chose power over justice.**",
       choices: [],
       scene: "ending",
-    }
+    },
       // village scenes
     {
       id: "village",

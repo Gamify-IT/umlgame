@@ -15,11 +15,22 @@ const stuff2 = ref('');
 const deleteButtonPos = ref<{ x: number; y: number } | null>(null);
 let currentLinkType = ref<'dependency' | 'association' | 'aggregation' | 'composition' | 'generalization' | null>(null);
 type LinkType = "dependency" | "association" | "aggregation" | "composition" | "generalization";
+const selectedLink = ref<dia.Link | null>(null);
 
 function isLinkType(type: string): type is LinkType {
   return ["dependency", "association", "aggregation", "composition", "generalization"].includes(type);
 }
 
+function handleLinkClick(linkView: dia.LinkView) {
+  selectedLink.value = linkView.model;
+}
+
+function deleteRelation() {
+  if (selectedLink.value) {
+    selectedLink.value.remove();
+    selectedLink.value = null;   
+  }
+}
 
 let linkSourceElement: dia.Element | null = null;
 let link: dia.Link | null = null;
@@ -258,6 +269,10 @@ onMounted(() => {
         });
       }
 
+      paper.on('link:pointerclick', (linkView) => {
+        handleLinkClick(linkView);
+      });
+
       paperContainer.value.addEventListener('dragover', (event) => {
         event.preventDefault();
       });
@@ -343,6 +358,11 @@ onMounted(() => {
           Methods:
           <b-form-textarea v-model="stuff2" @input="doStuff2" />
         </label>
+      </div>
+      <div class="right" v-if="selectedLink">
+        <b-button size="sm" variant="danger" @click="deleteRelation">
+          Delete Relation
+        </b-button>
       </div>
     </div>
   </div>
