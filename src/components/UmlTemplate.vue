@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { dia, shapes, util } from '@joint/core';
-import { onMounted, ref, defineProps, nextTick, watch } from "vue";
+import { onMounted, ref, defineProps, nextTick } from "vue";
 import { BFormInput, BFormTextarea } from "bootstrap-vue-3";
 
 const namespace = shapes;
@@ -8,7 +8,10 @@ const graph = new dia.Graph({}, { cellNamespace: namespace });
 const paperContainer = ref<HTMLElement | null>(null);
 const paletteContainer = ref<HTMLElement | null>(null);
 const props = defineProps<{ questionId: string }>();
+
 const selectedElement = ref<dia.Element | null>(null);
+const selectedLink = ref<dia.Link | null>(null);
+
 const labelText = ref('');
 const stuff = ref('');
 const stuff2 = ref('');
@@ -20,63 +23,26 @@ function isLinkType(type: string): type is LinkType {
   return ["dependency", "association", "aggregation", "composition", "generalization"].includes(type);
 }
 
+function handleLinkClick(linkView: dia.LinkView) {
+  selectedLink.value = linkView.model;
+  selectedElement.value = null; 
+}
 
-let linkSourceElement: dia.Element | null = null;
-let link: dia.Link | null = null;
-let isDependencyMode = ref(false);
-
-class custRect extends shapes.standard.Rectangle {
-  defaults() {
-    return {
-      ...super.defaults,
-      type: 'Rect',
-      size: {
-        width: 100,
-        height: 80
-      },
-      attrs: {
-        body: {
-          width: 'calc(w)',
-          height: 'calc(h)',
-          fill: 'white',
-          strokeWidth: 2,
-          stroke: 'black'
-        },
-        label: {
-          text: '1st',
-          textVerticalAnchor: 'middle',
-          textAnchor: 'middle',
-          fontSize: 12,
-          x: 'calc(w/3)',  // no clue how to choose these values, but trial and error worked it out
-          y: 'calc(h/3)'
-        },
-        secondaryLabel: {
-          text: '2nd',
-          textVerticalAnchor: 'middle',
-          textAnchor: 'middle',
-          fontSize: 12,
-          x: 'calc(w/3)', 
-          y: 'calc(h/2)'
-        },
-        thirdLabel: {
-          text: '3rd',
-          textVerticalAnchor: 'middle',
-          textAnchor: 'middle',
-          fontSize: 12,
-          x: 'calc(w/3)',
-          y: 'calc(h/1.5)'
-        }
-      }
-    };
+function deleteRelation() {
+  if (selectedLink.value) {
+    selectedLink.value.remove();
+    selectedLink.value = null;   
   }
+}
 
-  preinitialize() {
-    this.markup = util.svg/* xml */ `
-             <rect @selector='body' />
-             <text @selector='label' />
-             <text @selector='secondaryLabel' />
-             <text @selector='thirdLabel' />
-         `;
+function handleElementClick(elementView: dia.ElementView) {
+  const clickedElement = elementView.model;
+  if (!isDependencyMode.value) {
+    selectedElement.value = clickedElement;
+    labelText.value = clickedElement.attr('label/text');
+    stuff.value = clickedElement.attr('secondaryLabel/text');
+    stuff2.value = clickedElement.attr('thirdLabel/text');
+    selectedLink.value = null;
   }
 }
 
@@ -106,138 +72,80 @@ function doStuff2() {
   }
 }
 
-function handleElementClick(elementView: dia.ElementView) {
-  const clickedElement = elementView.model;
-
-  if (isDependencyMode.value && currentLinkType.value) {
-    if (!linkSourceElement) {
-      linkSourceElement = clickedElement;
-      console.log("Start-Objekt ausgewählt:", clickedElement);
-    } else {
-      link = new shapes.standard.Link();
-
-      if (linkSourceElement === clickedElement) {
-        const bbox = linkSourceElement.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const topY = bbox.y - 30;
-
-        const loopVertices = [
-          { x: centerX - 20, y: topY },
-          { x: centerX + 20, y: topY }
-        ];
-
-        link.source({ id: linkSourceElement.id, anchor: { name: 'left' } });
-        link.target({ id: linkSourceElement.id, anchor: { name: 'right' } });
-
-        link.set('vertices', loopVertices);
-        link.connector('smooth');
-
-        graph.addCell(link);
-
-        linkSourceElement.on('change:position', () => {
-          if (!linkSourceElement) return;
-          const bbox = linkSourceElement.getBBox();
-          const newCenterX = bbox.x + bbox.width / 2;
-          const newTopY = bbox.y - 30;
-
-          const newLoopVertices = [
-            { x: newCenterX - 20, y: newTopY },
-            { x: newCenterX + 20, y: newTopY }
-          ];
-
-          if (link) {
-            link.set('vertices', newLoopVertices);
-          }
-        });
-
-      } else {
-        link.source(linkSourceElement!); 
-        link.target(clickedElement);
-      }
-
-      link.attr({
-        line: {
-          strokeWidth: 2,
-          stroke: 'black',
-        }
-      });
-
-      switch (currentLinkType.value) {
-        case 'dependency':
-          link.attr('line/strokeDasharray', '5,5');
-          link.attr('line/targetMarker', {
-            type: 'path',
-            d: 'M 10 -5 0 0 10 5 z',
-            fill: 'white',
-            stroke: 'black'
-          });
-          break;
-
-        case 'association':
-          link.attr('line/targetMarker', null);
-          break;
-
-        case 'aggregation':
-          link.attr('line/targetMarker', {
-            type: 'path',
-            d: 'M 20 0 L 10 5 L 0 0 L 10 -5 Z',
-            fill: 'white',
-            stroke: 'black'
-          });
-          break;
-
-        case 'composition':
-          link.attr('line/targetMarker', {
-            type: 'path',
-            d: 'M 20 0 L 10 5 L 0 0 L 10 -5 Z',
-            fill: 'black',
-            stroke: 'black'
-          });
-          break;
-
-        case 'generalization':
-          link.attr('line/strokeDasharray', null);
-          link.attr('line/targetMarker', {
-            type: 'path',
-            d: 'M 10 -5 0 0 10 5 z',
-            fill: 'white',
-            stroke: 'black'
-          });
-          break;
-      }
-
-      graph.addCell(link);
-
-      isDependencyMode.value = false;
-      currentLinkType.value = null;
-      linkSourceElement = null;
-      link = null;
-    }
-  } else {
-    selectedElement.value = clickedElement;
-    labelText.value = clickedElement.attr('label/text');
-    stuff.value = clickedElement.attr('secondaryLabel/text');
-    stuff2.value = clickedElement.attr('thirdLabel/text');
-  }
-}
-
-
-
 function deleteAllRelations() {
   if (!selectedElement.value) return;
-
   const links = graph.getConnectedLinks(selectedElement.value as unknown as dia.Cell);
-
   links.forEach(link => {
     link.remove();
   });
 }
 
+let linkSourceElement: dia.Element | null = null;
+let link: dia.Link | null = null;
+let isDependencyMode = ref(false);
+let hoveredElement: dia.Element | null = null; 
+
+class custRect extends shapes.standard.Rectangle {
+  defaults() {
+    return {
+      ...super.defaults,
+      type: 'Rect',
+      size: {
+        width: 100,
+        height: 80
+      },
+      attrs: {
+        body: {
+          width: 'calc(w)',
+          height: 'calc(h)',
+          fill: 'white',
+          strokeWidth: 2,
+          stroke: 'black'
+        },
+        label: {
+          text: '1st',
+          textVerticalAnchor: 'middle',
+          textAnchor: 'middle',
+          fontSize: 12,
+          x: 'calc(w/3)',
+          y: 'calc(h/3)'
+        },
+        secondaryLabel: {
+          text: '2nd',
+          textVerticalAnchor: 'middle',
+          textAnchor: 'middle',
+          fontSize: 12,
+          x: 'calc(w/3)',
+          y: 'calc(h/2)'
+        },
+        thirdLabel: {
+          text: '3rd',
+          textVerticalAnchor: 'middle',
+          textAnchor: 'middle',
+          fontSize: 12,
+          x: 'calc(w/3)',
+          y: 'calc(h/1.5)'
+        }
+      }
+    };
+  }
+
+  preinitialize() {
+    this.markup = util.svg/* xml */ `
+             <rect @selector='body' />
+             <text @selector='label' />
+             <text @selector='secondaryLabel' />
+             <text @selector='thirdLabel' />
+         `;
+  }
+}
+
+let paper: dia.Paper; 
 
 onMounted(() => {
   nextTick(() => {
     if (paperContainer.value) {
-      const paper = new dia.Paper({
+      paper = new dia.Paper({
         el: paperContainer.value,
         model: graph,
         width: 400,
@@ -250,6 +158,17 @@ onMounted(() => {
         handleElementClick(elementView);
       });
 
+      paper.on('element:mouseenter', (elementView) => {
+        if (!isDependencyMode.value) {
+          elementView.model.attr('body/stroke', 'blue');
+        }
+      });
+      paper.on('element:mouseleave', (elementView) => {
+        if (!isDependencyMode.value) {
+          elementView.model.attr('body/stroke', 'black');
+        }
+      });
+
       if (paletteContainer.value) {
         paletteContainer.value.querySelectorAll('.palette-item').forEach((item) => {
           item.addEventListener('dragstart', (event) => {
@@ -258,15 +177,70 @@ onMounted(() => {
         });
       }
 
+      paper.on('link:pointerclick', (linkView) => {
+        handleLinkClick(linkView);
+      });
+
       paperContainer.value.addEventListener('dragover', (event) => {
         event.preventDefault();
       });
+
+      const updateLinkTarget = (event: MouseEvent) => {
+        if (isDependencyMode.value && link) {
+          const paperPoint = paper.pageToLocalPoint({ x: event.clientX, y: event.clientY });
+          link.target({ x: paperPoint.x, y: paperPoint.y });
+          
+          const elementViews = paper.findViewsFromPoint(paperPoint);
+          const candidate = elementViews.find(view => view.model.isElement())?.model;
+          if (candidate) {
+            if (hoveredElement && hoveredElement.id !== candidate.id) {
+              hoveredElement.attr('body/stroke', 'black');
+            }
+            candidate.attr('body/stroke', 'blue');
+            hoveredElement = candidate;
+          } else {
+            if (hoveredElement) {
+              hoveredElement.attr('body/stroke', 'black');
+              hoveredElement = null;
+            }
+          }
+        }
+      };
+
+      const finalizeLink = (event: MouseEvent) => {
+        if (isDependencyMode.value && link) {
+          const paperPoint = paper.pageToLocalPoint({ x: event.clientX, y: event.clientY });
+          const elementViews = paper.findViewsFromPoint(paperPoint);
+          const targetElementView = elementViews.find(view => view.model.isElement());
+          
+          if (targetElementView) {
+            link.target(targetElementView.model);
+            targetElementView.model.attr('body/stroke', 'blue');
+            setTimeout(() => {
+              targetElementView.model.attr('body/stroke', 'black');
+            }, 2000);
+          } else {
+            link.remove();
+          }
+
+          isDependencyMode.value = false;
+          currentLinkType.value = null;
+          linkSourceElement = null;
+          link = null;
+
+          if (hoveredElement) {
+            hoveredElement.attr('body/stroke', 'black');
+            hoveredElement = null;
+          }
+          paperContainer.value?.removeEventListener('mousemove', updateLinkTarget);
+          paperContainer.value?.removeEventListener('mouseup', finalizeLink);
+        }
+      };
 
       paperContainer.value.addEventListener('drop', (event) => {
         event.preventDefault();
         const rawType = (event as DragEvent).dataTransfer?.getData('type') ?? '';
         const position = paper.pageToLocalPoint({ x: event.clientX, y: event.clientY });
-
         const elementViews = paper.findViewsFromPoint(position);
         const targetElement = elementViews.find(view => view.model.isElement());
 
@@ -275,7 +249,85 @@ onMounted(() => {
             linkSourceElement = targetElement.model;
             isDependencyMode.value = true;
             currentLinkType.value = rawType;
+            link = new shapes.standard.Link({
+              source: { id: linkSourceElement.id },
+              target: { x: position.x, y: position.y }
+            });
+
+            switch (currentLinkType.value) {
+              case 'dependency':
+                link.attr({
+                  line: {
+                    strokeWidth: 2,
+                    stroke: 'black',
+                    strokeDasharray: '5,5',
+                    targetMarker: {
+                      type: 'path',
+                      d: 'M 10 -5 0 0 10 5 z',
+                      fill: 'white',
+                      stroke: 'black'
+                    }
+                  }
+                });
+                break;
+              case 'association':
+                link.attr({
+                  line: {
+                    strokeWidth: 2,
+                    stroke: 'black',
+                    targetMarker: undefined
+                  }
+                });
+                break;
+              case 'aggregation':
+                link.attr({
+                  line: {
+                    strokeWidth: 2,
+                    stroke: 'black',
+                    targetMarker: {
+                      type: 'path',
+                      d: 'M 20 0 L 10 5 L 0 0 L 10 -5 Z',
+                      fill: 'white',
+                      stroke: 'black'
+                    }
+                  }
+                });
+                break;
+              case 'composition':
+                link.attr({
+                  line: {
+                    strokeWidth: 2,
+                    stroke: 'black',
+                    targetMarker: {
+                      type: 'path',
+                      d: 'M 20 0 L 10 5 L 0 0 L 10 -5 Z',
+                      fill: 'black',
+                      stroke: 'black'
+                    }
+                  }
+                });
+                break;
+              case 'generalization':
+                link.attr({
+                  line: {
+                    strokeWidth: 2,
+                    stroke: 'black',
+                    targetMarker: {
+                      type: 'path',
+                      d: 'M 10 -5 0 0 10 5 z',
+                      fill: 'white',
+                      stroke: 'black'
+                    }
+                  }
+                });
+                break;
+            }
+
+            graph.addCell(link);
             console.log(`Relation '${rawType}' gestartet mit`, linkSourceElement);
+
+            paperContainer.value?.addEventListener('mousemove', updateLinkTarget);
+            paperContainer.value?.addEventListener('mouseup', finalizeLink);
           } else {
             console.log(`Relation '${rawType}' gezogen, aber kein Startobjekt getroffen.`);
           }
@@ -290,7 +342,6 @@ onMounted(() => {
               attrs: { label: { text: 'Circle' } }
             });
           }
-
           if (element) {
             graph.addCell(element);
           }
@@ -299,8 +350,9 @@ onMounted(() => {
     }
   });
 });
-
 </script>
+
+
 
 <template>
   <div class="uml-wrapper" style="position: relative">
@@ -343,6 +395,11 @@ onMounted(() => {
           Methods:
           <b-form-textarea v-model="stuff2" @input="doStuff2" />
         </label>
+      </div>
+      <div class="right" v-if="selectedLink">
+        <b-button size="sm" variant="danger" @click="deleteRelation">
+          Delete Relation
+        </b-button>
       </div>
     </div>
   </div>
