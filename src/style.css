@@ -138,14 +138,14 @@ button:focus-visible {
   height: 100vh;
 }
 
-.rebels {
+.scene-rebels {
   background: url('src/assets/Images/Scenes/Rebels.png') no-repeat center center;
   background-size: cover;
   width: 100vw;
   height: 100vh;
 }
 
-.slums {
+.scene-slums {
   background: url('src/assets/Images/Scenes/Slums.png') no-repeat center center;
   background-size: cover;
   width: 100vw;
