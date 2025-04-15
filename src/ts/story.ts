@@ -181,155 +181,147 @@ export interface StoryNode {
       scene: "ending",
     },
       // village scenes
-      {
-         id: "city",
-        text: "Die Stadt liegt im Schatten. Armut, Angst und Unterdrückung prägen das Straßenbild. Ein verfallenes Schild begrüßt dich: 'Willkommen in Arvendale'. Ein alter Bettler murmelt: 'Der Bürgermeister spricht für die Königin… pass auf, wem du vertraust.'",
-        choices: [
-          { text: "Suche nach Verbündeten im Untergrund", nextId: "rebel_hideout" },
-          { text: "Gehe direkt zum Bürgermeister", nextId: "mayor_offer" },
+    {
+      id: "city",
+      text: "The city lies in shadow. Poverty, fear, and oppression dominate the streets. A decaying sign greets you: 'Welcome to Arvendale'. An old beggar mutters, 'The mayor speaks for the Queen… be careful who you trust.'",
+      choices: [
+         { text: "Look for allies in the underground", nextId: "rebel_hideout" },
+        { text: "Go straight to the mayor", nextId: "mayor_offer" },
+      ],
+      scene: "city",
+    },
+    {
+      id: "rebel_hideout",
+      text: "In a basement tavern, a mysterious glance leads you to a hidden chamber. The rebel leaders await you.",
+      choices: [
+        { text: "I want to help you", nextId: "side_healer_intro" },
+        { text: "I'm not sure…", nextId: "mayor_offer" },
+      ],
+      scene: "rebels",
+    },
+    {
+      id: "side_healer_intro",
+      text: "In the slums, you hear of an old healer. Some say she was once the Queen’s court mage.",
+      choices: [
+        { text: "Seek out the healer", nextId: "healer_hut" },
+        { text: "Ignore the rumor", nextId: "rebel_mission1" },
+      ],
+      scene: "slums",
+    },
+    {
+      id: "healer_hut",
+      text: "The healer asks for your help. Something dark lies in the river — something the Queen brought here.",
+      questionId: "8",
+      nextIdAfterQuestion: "healer_reward",
+      scene: "slums",
+    },
+    {
+      id: "healer_reward",
+      text: "You discover a sinister artifact. The healer banishes it and gives you a Light Seal.",
+      choices: [{ text: "Return to the rebels", nextId: "rebel_mission1" }],
+      scene: "slums",
+    },
+    {
+      id: "rebel_mission1",
+      text: "The rebels are planning to intercept a supply convoy guarded by soldiers. They need your help.",
+      questionId: "3",
+      nextIdAfterQuestion: "rebel_mission2",
+      scene: "rebels",
+    },
+    {
+      id: "rebel_mission2",
+      text: "The rebels suspect the mayor is hiding secret documents in the old city archive.",
+      choices: [
+        { text: "Sneak into the archive", nextId: "archive_entry" },
+        { text: "Ignore it and prepare the uprising", nextId: "city_uprising" },
         ],
-        scene: "city",
-      },
-      {
-        id: "rebel_hideout",
-        text: "In einer Kellerkneipe führt dich ein geheimnisvoller Blickkontakt in eine verborgene Kammer. Die Rebellenführer erwarten dich.",
-        choices: [
-          { text: "Ich will euch helfen", nextId: "side_healer_intro" },
-          { text: "Ich bin mir nicht sicher…", nextId: "mayor_offer" },
-        ],
-        scene: "rebels",
-      },
-      {
-        id: "side_healer_intro",
-        text: "Im Armenviertel hörst du von einer alten Heilerin. Manche sagen, sie war einst Hofmagierin der Königin.",
-        choices: [
-          { text: "Suche die Heilerin auf", nextId: "healer_hut" },
-          { text: "Ignoriere das Gerücht", nextId: "rebel_mission1" },
-        ],
-        scene: "slums",
-      },
-      {
-        id: "healer_hut",
-        text: "Die Heilerin bittet dich um Hilfe. Etwas Dunkles liegt im Fluss, das die Königin hierher gebracht hat.",
-        questionId: "8",
-        nextIdAfterQuestion: "healer_reward",
-        scene: "slums",
-      },
-      {
-        id: "healer_reward",
-        text: "Du findest ein finsteres Artefakt. Die Heilerin verbannt es und überreicht dir ein Licht-Siegel.",
-        choices: [{ text: "Zurück zu den Rebellen", nextId: "rebel_mission1" }],
-        scene: "slums",
-      },
-      {
-        id: "rebel_mission1",
-        text: "Die Rebellen planen, einen Versorgungskonvoi der Wachen abzufangen. Sie brauchen deine Hilfe.",
-        questionId: "3",
-        nextIdAfterQuestion: "rebel_mission2",
-        scene: "rebels",
-      },
-      {
-        id: "rebel_mission2",
-        text: "Die Rebellen vermuten, dass der Bürgermeister geheime Dokumente im alten Stadtarchiv versteckt hat.",
-        choices: [
-          { text: "Schleiche ins Archiv", nextId: "archive_entry" },
-          { text: "Ignoriere das und bereite den Aufstand vor", nextId: "city_uprising" },
-        ],
-        scene: "city",
-      },
-      {
-        id: "archive_entry",
-        text: "Im Archiv findest du Beweise für den Verrat des Bürgermeisters.",
-        questionId: "9",
-        nextIdAfterQuestion: "archive_success",
-        scene: "city",
-      },
-      {
-        id: "archive_success",
-        text: "Mit diesen Beweisen steigen dein Ansehen und deine Macht bei den Rebellen.",
-        choices: [{ text: "Beginne den Aufstand", nextId: "city_uprising" }],
-        scene: "city",
-      },
-      {
-        id: "city_uprising",
-        text: "Die Rebellen marschieren. Du führst sie zum Rathaus. Der Bürgermeister erwartet euch – bewaffnet.",
-        questionId: "5",
-        nextIdAfterQuestion: "good_ending_city",
-        scene: "city",
-      },
-      {
-        id: "mayor_offer",
-        text: "Der Bürgermeister empfängt dich mit offenen Armen. 'Hilf mir, Ordnung zu bewahren. Ich belohne Loyalität.'",
-        choices: [
-          { text: "Ich helfe dir", nextId: "mayor_main_mission1" },
-          { text: "Ich vertraue dir nicht", nextId: "rebel_hideout" },
-        ],
-        scene: "city",
-      },
-      {
-        id: "mayor_main_mission1",
-        text: "Der Bürgermeister schickt dich, um eine Rebellenzelle zu infiltrieren.",
-        questionId: "4",
-        nextIdAfterQuestion: "mayor_patrol_intro",
-        scene: "city",
-      },
-      {
-        id: "mayor_patrol_intro",
-        text: "'Eine Patrouille ist verschwunden', sagt der Bürgermeister. 'Finde heraus, was passiert ist.'",
-        choices: [
-          { text: "Suche die Patrouille", nextId: "forest_search" },
-          { text: "Ignoriere es", nextId: "mayor_main_mission2" },
-        ],
-        scene: "city",
-      },
-      {
-        id: "forest_search",
-        text: "Du findest die toten Wachen und ein Pergament – ein Befehl zum Angriff auf ein friedliches Dorf.",
-        questionId: "10",
-        nextIdAfterQuestion: "forest_discovery",
-        scene: "forest",
-      },
-      {
-        id: "forest_discovery",
-        text: "Du erkennst: Der Bürgermeister hat sie für ihren Ungehorsam ermorden lassen.",
-        choices: [
-          { text: "Schweigen und loyal bleiben", nextId: "mayor_main_mission2" },
-          { text: "Konfrontiere den Bürgermeister", nextId: "mayor_confront" },
-        ],
-        scene: "forest",
-      },
-      {
-        id: "mayor_confront",
-        text: "'Manchmal ist Härte nötig', sagt er. 'Entscheide dich.'",
-        choices: [
-          { text: "Ich bleibe an deiner Seite", nextId: "mayor_main_mission2" },
-          { text: "Ich verlasse dich und suche die Rebellen", nextId: "rebel_hideout" },
-        ],
-        scene: "city",
-      },
-    
-      {
-        id: "mayor_main_mission2",
-        text: "Der Bürgermeister will einen finalen Schlag gegen die Rebellen. Du führst die Elitewache.",
-        questionId: "6",
-        nextIdAfterQuestion: "bad_ending_city",
-        scene: "city",
-      },
-    
-      {
-        id: "good_ending_city",
-        text: "Mit Mut, Wahrheit und Verbündeten stürzt du den Bürgermeister. Die Stadt feiert ihre Freiheit.",
-        choices: [],
-        
-      },
-      {
-        id: "bad_ending_city",
-        text: "Die Rebellion wird zerschlagen. Die Stadt fällt tiefer in Dunkelheit. Der Bürgermeister lacht im Schatten der Königin.",
-        choices: [],
-        
-      },
-   
-
-
-   
+      scene: "city",
+    },
+    {
+      id: "archive_entry",
+      text: "In the archive, you uncover evidence of the mayor’s betrayal.",
+      questionId: "9",
+      nextIdAfterQuestion: "archive_success",
+      scene: "city",
+    },
+    {
+      id: "archive_success",
+      text: "With this proof, your reputation and influence among the rebels grow.",
+      choices: [{ text: "Start the uprising", nextId: "city_uprising" }],
+      scene: "city",
+    },
+    {
+      id: "city_uprising",
+      text: "The rebels march. You lead them to the town hall. The mayor awaits — armed.",
+      questionId: "5",
+      nextIdAfterQuestion: "good_ending_city",
+      scene: "city",
+    },
+    {
+      id: "mayor_offer",
+      text: "The mayor welcomes you warmly. 'Help me maintain order. Loyalty is well rewarded.'",
+      choices: [
+        { text: "I'll help you", nextId: "mayor_main_mission1" },
+        { text: "I don’t trust you", nextId: "rebel_hideout" },
+      ],
+      scene: "city",
+    },
+    {
+      id: "mayor_main_mission1",
+      text: "The mayor sends you to infiltrate a rebel cell.",
+      questionId: "4",
+      nextIdAfterQuestion: "mayor_patrol_intro",
+      scene: "city",
+    },
+    {
+      id: "mayor_patrol_intro",
+      text: "'A patrol has gone missing,' says the mayor. 'Find out what happened.'",
+      choices: [
+        { text: "Search for the patrol", nextId: "forest_search" },
+        { text: "Ignore it", nextId: "mayor_main_mission2" },
+      ],
+      scene: "city",
+    },
+    {
+      id: "forest_search",
+      text: "You find the guards dead and a scroll — an order to attack a peaceful village.",
+      questionId: "10",
+      nextIdAfterQuestion: "forest_discovery",
+      scene: "forest",
+    },
+    {
+      id: "forest_discovery",
+      text: "You realize: The mayor had them killed for disobedience.",
+      choices: [
+        { text: "Stay silent and remain loyal", nextId: "mayor_main_mission2" },
+        { text: "Confront the mayor", nextId: "mayor_confront" },
+      ],
+      scene: "forest",
+    },
+    {
+      id: "mayor_confront",
+      text: "'Sometimes harsh measures are necessary,' he says. 'Make your choice.'",
+      choices: [
+        { text: "I’ll stay by your side", nextId: "mayor_main_mission2" },
+        { text: "I’m leaving you and joining the rebels", nextId: "rebel_hideout" },
+      ],
+      scene: "city",
+    },
+    {
+      id: "mayor_main_mission2",
+      text: "The mayor plans a final strike against the rebels. You lead the elite guard.",
+      questionId: "6",
+      nextIdAfterQuestion: "bad_ending_city",
+      scene: "city",
+    },
+    {
+      id: "good_ending_city",
+      text: "With courage, truth, and allies, you overthrow the mayor. The city celebrates its freedom.",
+      choices: [],
+    },
+    {
+      id: "bad_ending_city",
+      text: "The rebellion is crushed. The city sinks deeper into darkness. The mayor laughs in the Queen’s shadow.",
+      choices: [],
+    }         
 ];
