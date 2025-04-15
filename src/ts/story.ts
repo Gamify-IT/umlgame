@@ -255,14 +255,14 @@ export interface StoryNode {
         text: "You charge from the hills with the rebels. Arrows fly. Steel rings out. Amid the chaos, a locked chest glows faintly — and hums with unnatural energy.",
         questionId: "1",
         nextIdAfterQuestion: "rebel_mission2",
-        scene: "rebels"
+        scene: "forest"
       },
       {
         id: "convoy_sneak",
         text: "Clad in stolen armor, you walk among the Queen’s soldiers. Inside a guarded cart, you find a sealed crate — pulsing with power. A sigil locks it shut.",
         questionId: "1",
         nextIdAfterQuestion: "rebel_mission2",
-        scene: "rebels"
+        scene: "forest"
       },
       {
         id: "rebel_mission2",
@@ -278,13 +278,13 @@ export interface StoryNode {
         text: "The archive sits beneath the governor’s plaza. You slip through the shadows, past magical wards. Inside, you find dusty scrolls and locked files.",
         questionId: "2",
         nextIdAfterQuestion: "archive_success",
-        scene: "city"
+        scene: "dungeon"
       },
       {
         id: "archive_success",
         text: "Letters. Orders. A secret pact with the Queen’s advisor. You return to the rebels.\n\n'You’ve lit the fuse,' the leader says. 'Now let's burn the lies down.'",
         choices: [{ text: "Lead the uprising", nextId: "city_uprising" }],
-        scene: "city"
+        scene: "rebels"
       },
       {
         id: "city_uprising",
@@ -293,51 +293,100 @@ export interface StoryNode {
       },
       {
         id: "mayor_offer",
-        text: "The mayor greets you in a room full of velvet and secrets. 'You’ve been snooping where you shouldn’t,' he says. 'But you’re useful. I have work — dangerous work.'",
+        text: "Mayor Virell welcomes you into his study. 'I know things look grim,' he says, offering tea. 'But keeping the peace isn’t always graceful.'",
         choices: [
-          { text: "Hear him out", nextId: "mayor_main_mission1" },
-          { text: "Accuse him of treason", nextId: "mayor_confront" }
+          { text: "I want to help restore order", nextId: "mayor_main_mission1" },
+          { text: "I need to see more before I decide", nextId: "rebel_hideout" },
         ],
-        scene: "city"
+        scene: "city",
       },
       {
         id: "mayor_main_mission1",
-        text: "He leans in. 'There’s a noble moving against us. He hides behind his wealth and old oaths. Expose him, and I’ll make you powerful.'",
+        text: "The mayor asks you to investigate a rebel cell. 'We can’t afford more chaos,' he says, calm and earnest.",
+        questionId: "1",
+        nextIdAfterQuestion: "mayor_patrol_intro",
+        scene: "city",
+      },
+      {
+        id: "mayor_patrol_intro",
+        text: "'A patrol vanished outside the city walls,' he says. 'See if you can find out what happened. I trust your judgment.'",
         choices: [
-          { text: "Accept", nextId: "mayor_spy_mission" },
-          { text: "Refuse", nextId: "rebel_hideout" }
+          { text: "Search for the patrol", nextId: "forest_search" },
+          { text: "Let it go for now", nextId: "mayor_main_mission2" },
         ],
-        scene: "city"
+        scene: "city",
       },
       {
-        id: "mayor_spy_mission",
-        text: "You infiltrate the noble’s manor during a masquerade. Candles flicker over forbidden documents. A name keeps appearing: yours.",
-        questionId: "2",
-        nextIdAfterQuestion: "mayor_main_mission2",
-        scene: "city"
+        id: "forest_search",
+        text: "In the woods, you find the fallen patrol — and a scroll detailing orders for a village attack. The orders are signed by the mayor himself.",
+        questionId: "1",
+        nextIdAfterQuestion: "forest_discovery",
+        scene: "forest",
       },
       {
-        id: "mayor_main_mission2",
-        text: "You confront the mayor with the noble’s secrets. He’s unfazed. 'Good. Now you see what’s at stake. Work with me — or be consumed by the coming storm.'",
+        id: "forest_discovery",
+        text: "You feel the weight of betrayal — the mayor may have orchestrated this. But why?",
         choices: [
-          { text: "Side with the mayor", nextId: "mayor_victory" },
-          { text: "Betray him and join the rebels", nextId: "rebel_hideout" }
+          { text: "Say nothing for now", nextId: "mayor_main_mission2" },
+          { text: "Confront him about the orders", nextId: "mayor_confront" },
         ],
-        scene: "city"
-      },
-      {
-        id: "mayor_victory",
-        text: "The mayor ascends to power. You rise with him. The city is stable — but beneath the surface, the Queen’s shadow grows.",
-        scene: "city"
+        scene: "forest",
       },
       {
         id: "mayor_confront",
-        text: "He meets your accusations with silence at first. Then, calmly, 'I’ve done what was necessary. You can help me finish it. Or join those fools in the gutter.'",
+        text: "He leans back, eyes calm. 'This city is fragile. Sacrifices… are necessary.' He lets the silence linger. 'You can still stand with me.'",
         choices: [
-          { text: "Side with the mayor", nextId: "mayor_main_mission2" },
-          { text: "Turn away", nextId: "rebel_hideout" }
+          { text: "I’ll stay by your side", nextId: "mayor_main_mission2" },
+          { text: "I can’t be part of this", nextId: "rebel_hideout" },
+        ],
+        scene: "city",
+      },
+      {
+        id: "mayor_main_mission2",
+        text: "You’re given command of the elite guard for a decisive operation. The target: the rebel leadership.",
+        questionId: "1",
+        nextIdAfterQuestion: "mayor_shadow_whispers",
+        scene: "city",
+      },
+      {
+        id: "mayor_shadow_whispers",
+        text: "A cloaked informant intercepts you in the alleyway. 'The mayor plays a deeper game,' she says. 'Ask him about the Queen’s deal.'",
+        choices: [
+          { text: "Ignore her and proceed", nextId: "mayor_final_mission" },
+          { text: "Confront the mayor one last time", nextId: "mayor_truth_confront" }
         ],
         scene: "city"
+      },
+      {
+        id: "mayor_truth_confront",
+        text: "He doesn’t flinch. 'Yes, I made a pact with the Queen — but only to protect us. You don’t understand the weight I carry.'",
+        choices: [
+          { text: "Still… I trust you", nextId: "mayor_final_mission" },
+          { text: "That’s the last straw", nextId: "rebel_hideout" }
+        ],
+        scene: "city"
+      },
+      {
+        id: "mayor_final_mission",
+        text: "With all cards on the table, the mayor gives you one last task: eliminate the rebel leadership. 'This ends now — one way or another.'",
+        choices: [
+          { text: "Lead the assault", nextId: "bad_ending_city" },
+          { text: "Warn the rebels and turn on the mayor", nextId: "good_ending_city" }
+        ],
+        scene: "city"
+      },
+      {
+        id: "good_ending_city",
+        text: "With truth exposed and the people at your side, the mayor is overthrown. The city cheers. A new dawn begins — harder, but honest.",
+        choices: [],
+        scene: "city"
+      },
+      {
+        id: "bad_ending_city",
+        text: "The rebels are crushed. The mayor crowns himself Protector. The streets fall silent. Surveillance towers rise. And somewhere, the Queen smiles.",
+        choices: [],
+        scene: "city"
       }
+      
       
 ];
