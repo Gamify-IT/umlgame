@@ -18,6 +18,13 @@ const stuff2 = ref('');
 const deleteButtonPos = ref<{ x: number; y: number } | null>(null);
 let currentLinkType = ref<'dependency' | 'association' | 'aggregation' | 'composition' | 'generalization' | null>(null);
 type LinkType = "dependency" | "association" | "aggregation" | "composition" | "generalization";
+const classColors = {
+  class: 'white',
+  interface: '#cce5ff',
+  abstract: '#ffe6cc',
+  circle: 'lightgray',
+  enum: '#d3f3d3',
+};
 
 function isLinkType(type: string): type is LinkType {
   return ["dependency", "association", "aggregation", "composition", "generalization"].includes(type);
@@ -25,13 +32,13 @@ function isLinkType(type: string): type is LinkType {
 
 function handleLinkClick(linkView: dia.LinkView) {
   selectedLink.value = linkView.model;
-  selectedElement.value = null; 
+  selectedElement.value = null;
 }
 
 function deleteRelation() {
   if (selectedLink.value) {
     selectedLink.value.remove();
-    selectedLink.value = null;   
+    selectedLink.value = null;
   }
 }
 
@@ -60,17 +67,41 @@ function deleteSelectedElement() {
   }
 }
 
-function doStuff() {
+function adjustElementHeight() {
+  if (!selectedElement.value) return;
+
+  const attrLines = stuff.value.split('\n').length;
+  const methodLines = stuff2.value.split('\n').length;
+
+  const extraHeightPerLine = 15;
+  const totalHeight = 30 + attrLines * extraHeightPerLine + methodLines * extraHeightPerLine;
+
+  selectedElement.value.resize(100, totalHeight);
+
+  selectedElement.value.attr('line1/y1', 25);
+  selectedElement.value.attr('line1/y2', 25);
+  selectedElement.value.attr('line2/y1', 25 + attrLines * extraHeightPerLine);
+  selectedElement.value.attr('line2/y2', 25 + attrLines * extraHeightPerLine);
+  selectedElement.value.attr('label/y', 12);
+  selectedElement.value.attr('secondaryLabel/y', 25 + attrLines * extraHeightPerLine / 2);
+  selectedElement.value.attr('thirdLabel/y', 25 + attrLines * extraHeightPerLine + methodLines * extraHeightPerLine / 2);
+}
+
+
+function updateAttributes() {
   if (selectedElement.value) {
     selectedElement.value.attr('secondaryLabel/text', stuff.value);
+    adjustElementHeight();
   }
 }
 
-function doStuff2() {
+function updateMethods() {
   if (selectedElement.value) {
     selectedElement.value.attr('thirdLabel/text', stuff2.value);
+    adjustElementHeight();
   }
 }
+
 
 function deleteAllRelations() {
   if (!selectedElement.value) return;
@@ -83,7 +114,7 @@ function deleteAllRelations() {
 let linkSourceElement: dia.Element | null = null;
 let link: dia.Link | null = null;
 let isDependencyMode = ref(false);
-let hoveredElement: dia.Element | null = null; 
+let hoveredElement: dia.Element | null = null;
 
 class custRect extends shapes.standard.Rectangle {
   defaults() {
@@ -102,29 +133,54 @@ class custRect extends shapes.standard.Rectangle {
           strokeWidth: 2,
           stroke: 'black'
         },
+        line1: {
+          x1: 0,
+          y1: 25,
+          x2: 'calc(w)',
+          y2: 25,
+          stroke: 'black',
+          strokeWidth: 1
+        },
+        line2: {
+          x1: 0,
+          y1: 50,
+          x2: 'calc(w)',
+          y2: 50,
+          stroke: 'black',
+          strokeWidth: 1
+        },
+        typeLabel: {
+          text: '',
+          textVerticalAnchor: 'middle',
+          textAnchor: 'middle',
+          fontSize: 8,
+          fontStyle: 'italic',
+          x: 'calc(w/2)',
+          y: 4
+        },
         label: {
-          text: '1st',
+          text: 'Classname',
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
           fontSize: 12,
-          x: 'calc(w/3)',
-          y: 'calc(h/3)'
+          x: 'calc(w/2)',
+          y: 17
         },
         secondaryLabel: {
-          text: '2nd',
+          text: 'Attributes',
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
           fontSize: 12,
-          x: 'calc(w/3)',
-          y: 'calc(h/2)'
+          x: 'calc(w/2)',
+          y: 37
         },
         thirdLabel: {
-          text: '3rd',
+          text: 'Methods',
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
           fontSize: 12,
-          x: 'calc(w/3)',
-          y: 'calc(h/1.5)'
+          x: 'calc(w/2)',
+          y: 65
         }
       }
     };
@@ -132,15 +188,87 @@ class custRect extends shapes.standard.Rectangle {
 
   preinitialize() {
     this.markup = util.svg/* xml */ `
-             <rect @selector='body' />
-             <text @selector='label' />
-             <text @selector='secondaryLabel' />
-             <text @selector='thirdLabel' />
-         `;
+    <rect @selector='body' />
+    <line @selector='line1' />
+    <line @selector='line2' />
+    <text @selector='typeLabel' />
+    <text @selector='label' />
+    <text @selector='secondaryLabel' />
+    <text @selector='thirdLabel' />
+  `;
+  }
+
+}
+
+class InterfaceRect extends custRect {
+  override defaults() {
+    return {
+      ...super.defaults(),
+      type: 'InterfaceRect',
+      attrs: {
+        ...super.defaults().attrs,
+        body: {
+          ...super.defaults().attrs.body,
+          fill: '#cce5ff'
+        },
+        typeLabel: {
+          ...super.defaults().attrs.typeLabel,
+          text: '«interface»',
+          fontSize: 10,
+          y: 5
+        }
+      }
+    };
   }
 }
 
-let paper: dia.Paper; 
+class AbstractRect extends custRect {
+  override defaults() {
+    return {
+      ...super.defaults(),
+      type: 'AbstractRect',
+      attrs: {
+        ...super.defaults().attrs,
+        body: {
+          ...super.defaults().attrs.body,
+          fill: '#ffe6cc'
+        },
+        typeLabel: {
+          ...super.defaults().attrs.typeLabel,
+          text: '«abstract»',
+          fontSize: 10,
+          y: 5
+        }
+      }
+
+    };
+  }
+}
+
+class EnumRect extends custRect {
+  override defaults() {
+    return {
+      ...super.defaults(),
+      type: 'EnumRect',
+      attrs: {
+        ...super.defaults().attrs,
+        body: {
+          ...super.defaults().attrs.body,
+          fill: '#d3f3d3'
+        },
+        typeLabel: {
+          ...super.defaults().attrs.typeLabel,
+          text: '«enum»',
+          fontSize: 10,
+          y: 5
+        }
+      }
+    };
+  }
+}
+
+
+let paper: dia.Paper;
 
 onMounted(() => {
   nextTick(() => {
@@ -148,8 +276,8 @@ onMounted(() => {
       paper = new dia.Paper({
         el: paperContainer.value,
         model: graph,
-        width: 400,
-        height: 400,
+        width: 700,
+        height: 600,
         background: { color: '#F5F5F5' },
         cellViewNamespace: namespace
       });
@@ -189,7 +317,7 @@ onMounted(() => {
         if (isDependencyMode.value && link) {
           const paperPoint = paper.pageToLocalPoint({ x: event.clientX, y: event.clientY });
           link.target({ x: paperPoint.x, y: paperPoint.y });
-          
+
           const elementViews = paper.findViewsFromPoint(paperPoint);
           const candidate = elementViews.find(view => view.model.isElement())?.model;
           if (candidate) {
@@ -212,7 +340,7 @@ onMounted(() => {
           const paperPoint = paper.pageToLocalPoint({ x: event.clientX, y: event.clientY });
           const elementViews = paper.findViewsFromPoint(paperPoint);
           const targetElementView = elementViews.find(view => view.model.isElement());
-          
+
           if (targetElementView) {
             link.target(targetElementView.model);
             targetElementView.model.attr('body/stroke', 'blue');
@@ -333,15 +461,22 @@ onMounted(() => {
           }
         } else {
           let element;
-          if (rawType === 'rectangle') {
+          if (rawType === 'class') {
             element = new custRect({ position });
+          } else if (rawType === 'interface') {
+            element = new InterfaceRect({ position });
+          } else if (rawType === 'abstract') {
+            element = new AbstractRect({ position });
           } else if (rawType === 'circle') {
             element = new shapes.standard.Circle({
               position,
               size: { width: 50, height: 50 },
               attrs: { label: { text: 'Circle' } }
             });
+          } else if (rawType === 'enum') {
+            element = new EnumRect({ position });
           }
+
           if (element) {
             graph.addCell(element);
           }
@@ -361,8 +496,25 @@ onMounted(() => {
 
         <div class="palette-group">
           <div class="palette-title">Objects</div>
-          <div class="palette-item" data-type="rectangle" draggable="true">Rectangle</div>
-          <div class="palette-item" data-type="circle" draggable="true">Circle</div>
+          <div class="palette-item" data-type="class" draggable="true" :style="{ backgroundColor: classColors.class }">
+            Class
+          </div>
+          <div class="palette-item" data-type="interface" draggable="true"
+            :style="{ backgroundColor: classColors.interface }">
+            Interface
+          </div>
+          <div class="palette-item" data-type="abstract" draggable="true"
+            :style="{ backgroundColor: classColors.abstract }">
+            Abstract
+          </div>
+          <div class="palette-item" data-type="enum" draggable="true" :style="{ backgroundColor: classColors.enum }">
+            Enum
+          </div>
+
+          <div class="palette-item" data-type="circle" draggable="true"
+            :style="{ backgroundColor: classColors.circle }">
+            Circle
+          </div>
         </div>
 
         <div class="palette-group">
@@ -389,11 +541,11 @@ onMounted(() => {
         </b-label>
         <label class="label">
           Attributes:
-          <b-form-textarea v-model="stuff" @input="doStuff" />
+          <b-form-textarea v-model="stuff" @input="updateAttributes" />
         </label>
         <label class="label">
           Methods:
-          <b-form-textarea v-model="stuff2" @input="doStuff2" />
+          <b-form-textarea v-model="stuff2" @input="updateMethods" />
         </label>
       </div>
       <div class="right" v-if="selectedLink">
@@ -417,7 +569,7 @@ onMounted(() => {
 
 .palette {
   width: 150px;
-  background: #ddd;
+  background: rgb(226, 220, 201);
   padding: 10px;
   border-radius: 5px;
 }
@@ -425,7 +577,7 @@ onMounted(() => {
 .palette-item {
   padding: 10px;
   margin-bottom: 5px;
-  background: #fff;
+  background: #f3f0f0;
   text-align: center;
   cursor: grab;
   border: 1px solid #aaa;
@@ -448,7 +600,7 @@ onMounted(() => {
 .paper-container {
   width: 400px;
   height: 400px;
-  border: 2px solid #000;
+  border: 2px solid rgb(226, 220, 201);
   background: #f5f5f5;
 }
 
