@@ -88,7 +88,6 @@ function handleElementClick(elementView: dia.ElementView) {
   selectedLink.value = null;
 
   clickedElement.attr('body/stroke', '#f1c40f');
-  clickedElement.attr('body/stroke-width', 4);
   clickedElement.attr('body/fill', 'rgba(241, 196, 15, 0.3)');
 }
 
