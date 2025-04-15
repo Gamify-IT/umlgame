@@ -28,6 +28,35 @@ const classColors = {
   enum: '#d3f3d3',
 };
 
+function resetElementStyle(element: dia.Element) {
+  const elementType = element.get('type');
+  let originalFill: string;
+  switch (elementType) {
+    case 'InterfaceRect':
+      originalFill = '#cce5ff';
+      break;
+    case 'AbstractRect':
+      originalFill = '#ffe6cc';
+      break;
+    case 'EnumRect':
+      originalFill = '#d3f3d3';
+      break;
+    default:
+      originalFill = 'white';
+      break;
+  }
+
+  element.attr({
+    body: {
+      stroke: 'black',
+      strokeWidth: 2,
+      fill: originalFill
+    }
+  });
+
+}
+
+
 function isLinkType(type: string): type is LinkType {
   return ["dependency", "association", "aggregation", "composition", "generalization"].includes(type);
 }
@@ -46,14 +75,23 @@ function deleteRelation() {
 
 function handleElementClick(elementView: dia.ElementView) {
   const clickedElement = elementView.model;
-  if (!isDependencyMode.value) {
-    selectedElement.value = clickedElement;
-    labelText.value = clickedElement.attr('label/text');
-    stuff.value = clickedElement.attr('secondaryLabel/text');
-    stuff2.value = clickedElement.attr('thirdLabel/text');
-    selectedLink.value = null;
+
+  if (selectedElement.value && selectedElement.value.id !== clickedElement.id) {
+    resetElementStyle(selectedElement.value as dia.Element);
   }
+
+  selectedElement.value = clickedElement;
+
+  labelText.value = clickedElement.attr('label/text');
+  stuff.value = clickedElement.attr('secondaryLabel/text');
+  stuff2.value = clickedElement.attr('thirdLabel/text');
+  selectedLink.value = null;
+
+  clickedElement.attr('body/stroke', '#f1c40f');
+  clickedElement.attr('body/stroke-width', 4);
+  clickedElement.attr('body/fill', 'rgba(241, 196, 15, 0.3)');
 }
+
 
 function updateLabel() {
   if (selectedElement.value) {
