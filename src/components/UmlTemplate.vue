@@ -25,13 +25,13 @@ function isLinkType(type: string): type is LinkType {
 
 function handleLinkClick(linkView: dia.LinkView) {
   selectedLink.value = linkView.model;
-  selectedElement.value = null; 
+  selectedElement.value = null;
 }
 
 function deleteRelation() {
   if (selectedLink.value) {
     selectedLink.value.remove();
-    selectedLink.value = null;   
+    selectedLink.value = null;
   }
 }
 
@@ -60,17 +60,41 @@ function deleteSelectedElement() {
   }
 }
 
-function doStuff() {
+function adjustElementHeight() {
+  if (!selectedElement.value) return;
+
+  const attrLines = stuff.value.split('\n').length;
+  const methodLines = stuff2.value.split('\n').length;
+
+  const extraHeightPerLine = 15;
+  const totalHeight = 30 + attrLines * extraHeightPerLine + methodLines * extraHeightPerLine;
+
+  selectedElement.value.resize(100, totalHeight);
+
+  selectedElement.value.attr('line1/y1', 25);
+  selectedElement.value.attr('line1/y2', 25);
+  selectedElement.value.attr('line2/y1', 25 + attrLines * extraHeightPerLine);
+  selectedElement.value.attr('line2/y2', 25 + attrLines * extraHeightPerLine);
+  selectedElement.value.attr('label/y', 12);
+  selectedElement.value.attr('secondaryLabel/y', 25 + attrLines * extraHeightPerLine / 2);
+  selectedElement.value.attr('thirdLabel/y', 25 + attrLines * extraHeightPerLine + methodLines * extraHeightPerLine / 2);
+}
+
+
+function updateAttributes() {
   if (selectedElement.value) {
     selectedElement.value.attr('secondaryLabel/text', stuff.value);
+    adjustElementHeight();
   }
 }
 
-function doStuff2() {
+function updateMethods() {
   if (selectedElement.value) {
     selectedElement.value.attr('thirdLabel/text', stuff2.value);
+    adjustElementHeight();
   }
 }
+
 
 function deleteAllRelations() {
   if (!selectedElement.value) return;
@@ -83,7 +107,7 @@ function deleteAllRelations() {
 let linkSourceElement: dia.Element | null = null;
 let link: dia.Link | null = null;
 let isDependencyMode = ref(false);
-let hoveredElement: dia.Element | null = null; 
+let hoveredElement: dia.Element | null = null;
 
 class custRect extends shapes.standard.Rectangle {
   defaults() {
@@ -102,29 +126,45 @@ class custRect extends shapes.standard.Rectangle {
           strokeWidth: 2,
           stroke: 'black'
         },
+        line1: {
+          x1: 0,
+          y1: 25,
+          x2: 'calc(w)',
+          y2: 25,
+          stroke: 'black',
+          strokeWidth: 1
+        },
+        line2: {
+          x1: 0,
+          y1: 50,
+          x2: 'calc(w)',
+          y2: 50,
+          stroke: 'black',
+          strokeWidth: 1
+        },
         label: {
-          text: '1st',
+          text: 'Classname',
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
           fontSize: 12,
-          x: 'calc(w/3)',
-          y: 'calc(h/3)'
+          x: 'calc(w/2)',
+          y: 12
         },
         secondaryLabel: {
-          text: '2nd',
+          text: 'Attributes',
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
           fontSize: 12,
-          x: 'calc(w/3)',
-          y: 'calc(h/2)'
+          x: 'calc(w/2)',
+          y: 37
         },
         thirdLabel: {
-          text: '3rd',
+          text: 'Methods',
           textVerticalAnchor: 'middle',
           textAnchor: 'middle',
           fontSize: 12,
-          x: 'calc(w/3)',
-          y: 'calc(h/1.5)'
+          x: 'calc(w/2)',
+          y: 65
         }
       }
     };
@@ -132,15 +172,18 @@ class custRect extends shapes.standard.Rectangle {
 
   preinitialize() {
     this.markup = util.svg/* xml */ `
-             <rect @selector='body' />
-             <text @selector='label' />
-             <text @selector='secondaryLabel' />
-             <text @selector='thirdLabel' />
-         `;
+    <rect @selector='body' />
+    <line @selector='line1' />
+    <line @selector='line2' />
+    <text @selector='label' />
+    <text @selector='secondaryLabel' />
+    <text @selector='thirdLabel' />
+  `;
   }
+
 }
 
-let paper: dia.Paper; 
+let paper: dia.Paper;
 
 onMounted(() => {
   nextTick(() => {
@@ -189,7 +232,7 @@ onMounted(() => {
         if (isDependencyMode.value && link) {
           const paperPoint = paper.pageToLocalPoint({ x: event.clientX, y: event.clientY });
           link.target({ x: paperPoint.x, y: paperPoint.y });
-          
+
           const elementViews = paper.findViewsFromPoint(paperPoint);
           const candidate = elementViews.find(view => view.model.isElement())?.model;
           if (candidate) {
@@ -212,7 +255,7 @@ onMounted(() => {
           const paperPoint = paper.pageToLocalPoint({ x: event.clientX, y: event.clientY });
           const elementViews = paper.findViewsFromPoint(paperPoint);
           const targetElementView = elementViews.find(view => view.model.isElement());
-          
+
           if (targetElementView) {
             link.target(targetElementView.model);
             targetElementView.model.attr('body/stroke', 'blue');
@@ -389,11 +432,11 @@ onMounted(() => {
         </b-label>
         <label class="label">
           Attributes:
-          <b-form-textarea v-model="stuff" @input="doStuff" />
+          <b-form-textarea v-model="stuff" @input="updateAttributes" />
         </label>
         <label class="label">
           Methods:
-          <b-form-textarea v-model="stuff2" @input="doStuff2" />
+          <b-form-textarea v-model="stuff2" @input="updateMethods" />
         </label>
       </div>
       <div class="right" v-if="selectedLink">
