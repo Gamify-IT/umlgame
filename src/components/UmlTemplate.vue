@@ -19,10 +19,11 @@ const deleteButtonPos = ref<{ x: number; y: number } | null>(null);
 let currentLinkType = ref<'dependency' | 'association' | 'aggregation' | 'composition' | 'generalization' | null>(null);
 type LinkType = "dependency" | "association" | "aggregation" | "composition" | "generalization";
 const classColors = {
-  class: 'white',         
-  interface: '#cce5ff',       
-  abstract: '#ffe6cc',        
-  circle: 'lightgray',        
+  class: 'white',
+  interface: '#cce5ff',
+  abstract: '#ffe6cc',
+  circle: 'lightgray',
+  enum: '#d3f3d3',
 };
 
 function isLinkType(type: string): type is LinkType {
@@ -214,7 +215,7 @@ class InterfaceRect extends custRect {
           ...super.defaults().attrs.typeLabel,
           text: '«interface»',
           fontSize: 10,
-          y:5
+          y: 5
         }
       }
     };
@@ -236,7 +237,7 @@ class AbstractRect extends custRect {
           ...super.defaults().attrs.typeLabel,
           text: '«abstract»',
           fontSize: 10,
-          y:5
+          y: 5
         }
       }
 
@@ -244,6 +245,27 @@ class AbstractRect extends custRect {
   }
 }
 
+class EnumRect extends custRect {
+  override defaults() {
+    return {
+      ...super.defaults(),
+      type: 'EnumRect',
+      attrs: {
+        ...super.defaults().attrs,
+        body: {
+          ...super.defaults().attrs.body,
+          fill: '#d3f3d3'
+        },
+        typeLabel: {
+          ...super.defaults().attrs.typeLabel,
+          text: '«enum»',
+          fontSize: 10,
+          y: 5
+        }
+      }
+    };
+  }
+}
 
 
 let paper: dia.Paper;
@@ -451,7 +473,10 @@ onMounted(() => {
               size: { width: 50, height: 50 },
               attrs: { label: { text: 'Circle' } }
             });
+          } else if (rawType === 'enum') {
+            element = new EnumRect({ position });
           }
+
           if (element) {
             graph.addCell(element);
           }
@@ -474,10 +499,6 @@ onMounted(() => {
           <div class="palette-item" data-type="class" draggable="true" :style="{ backgroundColor: classColors.class }">
             Class
           </div>
-          <div class="palette-item" data-type="circle" draggable="true"
-            :style="{ backgroundColor: classColors.circle }">
-            Circle
-          </div>
           <div class="palette-item" data-type="interface" draggable="true"
             :style="{ backgroundColor: classColors.interface }">
             Interface
@@ -485,6 +506,14 @@ onMounted(() => {
           <div class="palette-item" data-type="abstract" draggable="true"
             :style="{ backgroundColor: classColors.abstract }">
             Abstract
+          </div>
+          <div class="palette-item" data-type="enum" draggable="true" :style="{ backgroundColor: classColors.enum }">
+            Enum
+          </div>
+
+          <div class="palette-item" data-type="circle" draggable="true"
+            :style="{ backgroundColor: classColors.circle }">
+            Circle
           </div>
         </div>
 
