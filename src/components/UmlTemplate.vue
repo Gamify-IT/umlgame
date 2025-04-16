@@ -2,6 +2,8 @@
 import { dia, shapes, util } from '@joint/core';
 import { onMounted, ref, defineProps, nextTick } from "vue";
 import { BFormInput, BFormTextarea } from "bootstrap-vue-3";
+import { CustRect, InterfaceRect, AbstractRect, EnumRect } from '../ts/links';
+
 
 const namespace = shapes;
 const graph = new dia.Graph({}, { cellNamespace: namespace });
@@ -26,6 +28,35 @@ const classColors = {
   enum: '#d3f3d3',
 };
 
+function resetElementStyle(element: dia.Element) {
+  const elementType = element.get('type');
+  let originalFill: string;
+  switch (elementType) {
+    case 'InterfaceRect':
+      originalFill = '#cce5ff';
+      break;
+    case 'AbstractRect':
+      originalFill = '#ffe6cc';
+      break;
+    case 'EnumRect':
+      originalFill = '#d3f3d3';
+      break;
+    default:
+      originalFill = 'white';
+      break;
+  }
+
+  element.attr({
+    body: {
+      stroke: 'black',
+      strokeWidth: 2,
+      fill: originalFill
+    }
+  });
+
+}
+
+
 function isLinkType(type: string): type is LinkType {
   return ["dependency", "association", "aggregation", "composition", "generalization"].includes(type);
 }
@@ -44,14 +75,22 @@ function deleteRelation() {
 
 function handleElementClick(elementView: dia.ElementView) {
   const clickedElement = elementView.model;
-  if (!isDependencyMode.value) {
-    selectedElement.value = clickedElement;
-    labelText.value = clickedElement.attr('label/text');
-    stuff.value = clickedElement.attr('secondaryLabel/text');
-    stuff2.value = clickedElement.attr('thirdLabel/text');
-    selectedLink.value = null;
+
+  if (selectedElement.value && selectedElement.value.id !== clickedElement.id) {
+    resetElementStyle(selectedElement.value as dia.Element);
   }
+
+  selectedElement.value = clickedElement;
+
+  labelText.value = clickedElement.attr('label/text');
+  stuff.value = clickedElement.attr('secondaryLabel/text');
+  stuff2.value = clickedElement.attr('thirdLabel/text');
+  selectedLink.value = null;
+
+  clickedElement.attr('body/stroke', '#f1c40f');
+  clickedElement.attr('body/fill', 'rgba(241, 196, 15, 0.3)');
 }
+
 
 function updateLabel() {
   if (selectedElement.value) {
@@ -115,157 +154,6 @@ let linkSourceElement: dia.Element | null = null;
 let link: dia.Link | null = null;
 let isDependencyMode = ref(false);
 let hoveredElement: dia.Element | null = null;
-
-class custRect extends shapes.standard.Rectangle {
-  defaults() {
-    return {
-      ...super.defaults,
-      type: 'Rect',
-      size: {
-        width: 100,
-        height: 80
-      },
-      attrs: {
-        body: {
-          width: 'calc(w)',
-          height: 'calc(h)',
-          fill: 'white',
-          strokeWidth: 2,
-          stroke: 'black'
-        },
-        line1: {
-          x1: 0,
-          y1: 25,
-          x2: 'calc(w)',
-          y2: 25,
-          stroke: 'black',
-          strokeWidth: 1
-        },
-        line2: {
-          x1: 0,
-          y1: 50,
-          x2: 'calc(w)',
-          y2: 50,
-          stroke: 'black',
-          strokeWidth: 1
-        },
-        typeLabel: {
-          text: '',
-          textVerticalAnchor: 'middle',
-          textAnchor: 'middle',
-          fontSize: 8,
-          fontStyle: 'italic',
-          x: 'calc(w/2)',
-          y: 4
-        },
-        label: {
-          text: 'Classname',
-          textVerticalAnchor: 'middle',
-          textAnchor: 'middle',
-          fontSize: 12,
-          x: 'calc(w/2)',
-          y: 17
-        },
-        secondaryLabel: {
-          text: 'Attributes',
-          textVerticalAnchor: 'middle',
-          textAnchor: 'middle',
-          fontSize: 12,
-          x: 'calc(w/2)',
-          y: 37
-        },
-        thirdLabel: {
-          text: 'Methods',
-          textVerticalAnchor: 'middle',
-          textAnchor: 'middle',
-          fontSize: 12,
-          x: 'calc(w/2)',
-          y: 65
-        }
-      }
-    };
-  }
-
-  preinitialize() {
-    this.markup = util.svg/* xml */ `
-    <rect @selector='body' />
-    <line @selector='line1' />
-    <line @selector='line2' />
-    <text @selector='typeLabel' />
-    <text @selector='label' />
-    <text @selector='secondaryLabel' />
-    <text @selector='thirdLabel' />
-  `;
-  }
-
-}
-
-class InterfaceRect extends custRect {
-  override defaults() {
-    return {
-      ...super.defaults(),
-      type: 'InterfaceRect',
-      attrs: {
-        ...super.defaults().attrs,
-        body: {
-          ...super.defaults().attrs.body,
-          fill: '#cce5ff'
-        },
-        typeLabel: {
-          ...super.defaults().attrs.typeLabel,
-          text: '«interface»',
-          fontSize: 10,
-          y: 5
-        }
-      }
-    };
-  }
-}
-
-class AbstractRect extends custRect {
-  override defaults() {
-    return {
-      ...super.defaults(),
-      type: 'AbstractRect',
-      attrs: {
-        ...super.defaults().attrs,
-        body: {
-          ...super.defaults().attrs.body,
-          fill: '#ffe6cc'
-        },
-        typeLabel: {
-          ...super.defaults().attrs.typeLabel,
-          text: '«abstract»',
-          fontSize: 10,
-          y: 5
-        }
-      }
-
-    };
-  }
-}
-
-class EnumRect extends custRect {
-  override defaults() {
-    return {
-      ...super.defaults(),
-      type: 'EnumRect',
-      attrs: {
-        ...super.defaults().attrs,
-        body: {
-          ...super.defaults().attrs.body,
-          fill: '#d3f3d3'
-        },
-        typeLabel: {
-          ...super.defaults().attrs.typeLabel,
-          text: '«enum»',
-          fontSize: 10,
-          y: 5
-        }
-      }
-    };
-  }
-}
 
 
 let paper: dia.Paper;
@@ -462,7 +350,7 @@ onMounted(() => {
         } else {
           let element;
           if (rawType === 'class') {
-            element = new custRect({ position });
+            element = new CustRect({ position });
           } else if (rawType === 'interface') {
             element = new InterfaceRect({ position });
           } else if (rawType === 'abstract') {
