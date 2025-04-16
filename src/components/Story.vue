@@ -4,6 +4,7 @@ import { storyData } from "../ts/story";
 import { dummyQuestions } from "../ts/Questions/dummyQuestions";
 import { PlayerStats } from "../ts/player";
 import UmlTemplate from "../components/UmlTemplate.vue";
+import heroImage from "../assets/Characters/Hero.jpg";
 
 const scene = ref("forest");
 const currentNodeId = ref("start");
@@ -69,6 +70,7 @@ if (isCorrect && currentNode.value?.nextIdAfterQuestion){
 
 <template>
   <div :class="sceneBackground" class="background">
+    <img :src="heroImage" alt="Hero" class="character-left" />
     <div id="life-display">
       <img
     v-for="(full, index) in lifeArray"
@@ -152,6 +154,7 @@ if (isCorrect && currentNode.value?.nextIdAfterQuestion){
   align-items: center; 
   gap: 10px;
   color: white;
+  z-index: 10;
   
 }
 .question-box {
@@ -203,5 +206,13 @@ if (isCorrect && currentNode.value?.nextIdAfterQuestion){
   background-color: #444;
 }
 
+.character-left {
+  position: absolute;
+  bottom: 0px; 
+  left: 0; 
+  height: 700px; 
+  z-index: 1; 
+  image-rendering: auto; 
+}
 
 </style>
