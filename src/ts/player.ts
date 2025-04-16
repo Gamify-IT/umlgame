@@ -5,6 +5,7 @@ export interface Player {
   }
 
   export const PlayerStats = reactive({
-    lp: 3,
+    lp: 6,
+    maxLp: 6,
 });
     

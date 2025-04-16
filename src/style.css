@@ -60,6 +60,13 @@ button:focus-visible {
   padding: 2em;
 }
 
+.pixel-font {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 20px; 
+  line-height: 1.6;
+  letter-spacing: 0.5px;
+}
+
 #app {
   width: 100vw;
   height: 100vh;

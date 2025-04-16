@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, } from "vue";
+import { ref, computed, watch } from "vue";
 import { storyData } from "../ts/story";
 import { dummyQuestions } from "../ts/Questions/dummyQuestions";
 import { PlayerStats } from "../ts/player";
@@ -10,6 +10,9 @@ const currentNodeId = ref("start");
 
 
 const currentNode = computed(() => storyData.find((node) => node.id === currentNodeId.value));
+const lifeArray = computed(() => {
+  return Array.from({ length: PlayerStats.maxLp }, (_, i) => i < PlayerStats.lp);
+});
 
 const makeChoice = (nextId: string) => {
   const nextNode = storyData.find((node) => node.id === nextId);
@@ -24,37 +27,76 @@ const currentQuestion = computed(() =>
 );
 
 const sceneBackground = computed(() => `scene-${scene.value}`);
+const displayedText = ref("");
+const textFinished = ref(false);
+
+let typingTimeout: ReturnType<typeof setTimeout> | null = null;
+
+watch(
+  () => currentNode.value?.text,
+  (newText) => {
+    if (typingTimeout) clearTimeout(typingTimeout);
+    displayedText.value = "";
+    textFinished.value = false;
+    if (newText) typeWriter(newText, 0);
+  },
+  { immediate: true }
+);
+
+function typeWriter(text: string, i: number) {
+  if (i < text.length) {
+    displayedText.value += text[i];
+    typingTimeout = setTimeout(() => typeWriter(text, i + 1), 40); 
+  } else {
+    textFinished.value = true; 
+  }
+}
 
 function answerQuestion  (isCorrect: boolean)  {
 if (isCorrect && currentNode.value?.nextIdAfterQuestion){
   makeChoice(currentNode.value.nextIdAfterQuestion);
 } else {
   PlayerStats.lp -= 1;
-  console.log(`Lebenspunkte: ${PlayerStats.lp}`);
+  if (PlayerStats.lp < 0) PlayerStats.lp = 0;
+    console.log(`Lebenspunkte: ${PlayerStats.lp}`);
+    
 }
 }
+
+
+
 </script>
 
 <template>
   <div :class="sceneBackground" class="background">
+    <div id="life-display">
+      <img
+    v-for="(full, index) in lifeArray"
+    :key="index"
+    :src="full ? 'src/assets/Icons/heart_full.jpg' : 'src/assets/Icons/heart_empty.jpg'"
+    class="heart-icon"
+  />
+</div>
     <div class="story-container">
       
 
       <div v-if="currentNode?.questionId" class="question-box">
     <!-- Falls es eine Uml Frage ist -->
       <UmlTemplate
-          v-if="currentNode?.questionId === '2'" 
+          v-if="currentNode?.questionId === '2' && textFinished" 
           :questionId="currentNode.questionId" 
           @answer="answerQuestion"
+           
         />
 
       <!-- Falls eine Frage vorhanden ist -->
-      <div v-else-if="currentQuestion">
+      <div v-else-if="currentQuestion && textFinished">
         <h3>{{ currentQuestion.text }}</h3>
         <button
           v-for="choice in currentQuestion.choices"
           :key="choice.text"
           @click="answerQuestion(choice.correct)"
+           class="pixel-font"
         >
           {{ choice.text }}
         </button>
@@ -62,11 +104,12 @@ if (isCorrect && currentNode.value?.nextIdAfterQuestion){
 
     </div>
     <div class="text-box">
-        <h2>{{ currentNode?.text }}</h2>
+        <h2 class="pixel-font">{{ displayedText }}</h2>
 
         <!-- Falls es normale Story-Entscheidungen gibt -->
-        <div v-if="currentNode?.choices">
-          <button v-for="choice in currentNode.choices" :key="choice.nextId" @click="makeChoice(choice.nextId)">
+        <div v-if="textFinished && currentNode?.choices">
+        
+          <button v-for="choice in currentNode.choices" :key="choice.nextId" @click="makeChoice(choice.nextId)"  class="pixel-font story-button">
             {{ choice.text }}
           </button>
         </div>
@@ -94,6 +137,7 @@ if (isCorrect && currentNode.value?.nextIdAfterQuestion){
   position: relative;
   width: 80%;
   max-width: 800px;
+  
 }
 
 .text-box {
@@ -125,6 +169,39 @@ if (isCorrect && currentNode.value?.nextIdAfterQuestion){
   z-index: 10;
 }
 
+#life-display {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 40px; 
+  z-index: 1000; 
+  user-select: none; 
+}
+
+.heart-icon {
+
+  width: 50px;
+  height: 40px;
+  margin-right: 4px;
+  image-rendering: pixelated;
+}
+
+.story-button {
+  background-color: #222;
+  border: 4px solid #fff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 14px;
+  color: #fff;
+  margin: 10px 0;
+  padding-right: 10px;
+}
+
+.story-button:hover {
+  background-color: #444;
+}
 
 
 </style>
