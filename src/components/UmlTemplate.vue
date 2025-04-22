@@ -13,6 +13,11 @@ const props = defineProps<{ questionId: string }>();
 
 const selectedElement = ref<dia.Element | null>(null);
 const selectedLink = ref<dia.Link | null>(null);
+const linkSourceMultiplicity = ref('');
+const linkSourceRole = ref('');
+const linkTargetMultiplicity = ref('');
+const linkTargetRole = ref('');
+const linkArrowLabel = ref('→');
 
 const labelText = ref('');
 const stuff = ref('');
@@ -28,34 +33,6 @@ const classColors = {
   enum: '#d3f3d3',
 };
 
-function resetElementStyle(element: dia.Element) {
-  const elementType = element.get('type');
-  let originalFill: string;
-  switch (elementType) {
-    case 'InterfaceRect':
-      originalFill = '#cce5ff';
-      break;
-    case 'AbstractRect':
-      originalFill = '#ffe6cc';
-      break;
-    case 'EnumRect':
-      originalFill = '#d3f3d3';
-      break;
-    default:
-      originalFill = 'white';
-      break;
-  }
-
-  element.attr({
-    body: {
-      stroke: 'black',
-      strokeWidth: 2,
-      fill: originalFill
-    }
-  });
-
-}
-
 
 function isLinkType(type: string): type is LinkType {
   return ["dependency", "association", "aggregation", "composition", "generalization"].includes(type);
@@ -64,7 +41,14 @@ function isLinkType(type: string): type is LinkType {
 function handleLinkClick(linkView: dia.LinkView) {
   selectedLink.value = linkView.model;
   selectedElement.value = null;
+
+  const labels = linkView.model.get('labels') || [];
+  linkSourceMultiplicity.value = labels[0]?.attrs?.text?.text || '';
+  linkSourceRole.value = labels[1]?.attrs?.text?.text || '';
+  linkTargetMultiplicity.value = labels[3]?.attrs?.text?.text || '';
+  linkTargetRole.value = labels[4]?.attrs?.text?.text || '';
 }
+
 
 function deleteRelation() {
   if (selectedLink.value) {
@@ -76,10 +60,6 @@ function deleteRelation() {
 function handleElementClick(elementView: dia.ElementView) {
   const clickedElement = elementView.model;
 
-  if (selectedElement.value && selectedElement.value.id !== clickedElement.id) {
-    resetElementStyle(selectedElement.value as dia.Element);
-  }
-
   selectedElement.value = clickedElement;
 
   labelText.value = clickedElement.attr('label/text');
@@ -87,8 +67,6 @@ function handleElementClick(elementView: dia.ElementView) {
   stuff2.value = clickedElement.attr('thirdLabel/text');
   selectedLink.value = null;
 
-  clickedElement.attr('body/stroke', '#f1c40f');
-  clickedElement.attr('body/fill', 'rgba(241, 196, 15, 0.3)');
 }
 
 
@@ -141,6 +119,25 @@ function updateMethods() {
   }
 }
 
+function updateLinkLabels() {
+  if (!selectedLink.value) return;
+
+  selectedLink.value.label(0, {
+    attrs: { text: { text: linkSourceMultiplicity.value } }
+  });
+  selectedLink.value.label(1, {
+    attrs: { text: { text: linkSourceRole.value } }
+  });
+  selectedLink.value.label(3, {
+    attrs: { text: { text: linkTargetMultiplicity.value } }
+  });
+  selectedLink.value.label(4, {
+    attrs: { text: { text: linkTargetRole.value } }
+  });
+  selectedLink.value.label(5, {
+    attrs: { text: { text: linkArrowLabel.value } }
+  });
+}
 
 function deleteAllRelations() {
   if (!selectedElement.value) return;
@@ -340,6 +337,88 @@ onMounted(() => {
             }
 
             graph.addCell(link);
+
+            // Quelle: Multiplizität (oben links)
+            link.appendLabel({
+              attrs: {
+                text: {
+                  text: '1',
+                  fill: 'black',
+                  fontSize: 12
+                }
+              },
+              position: {
+                distance: 0.2,
+                offset: { x: 0, y: -15 },
+                args: { keepDirection: true, keepAngle: true }
+
+              }
+            });
+
+            link.appendLabel({
+              attrs: {
+                text: {
+                  text: 'sourceRole',
+                  fill: 'black',
+                  fontSize: 12
+                }
+              },
+              position: {
+                distance: 0.2,
+                offset: { x: 0, y: 10 },
+                args: { keepDirection: true, keepAngle: true }
+
+              }
+            });
+
+            link.appendLabel({
+              attrs: {
+                text: {
+                  text: '0..*',
+                  fill: 'black',
+                  fontSize: 12
+                }
+              },
+              position: {
+                distance: 0.8,
+                offset: { x: 0, y: -15 },
+                args: { keepDirection: true, keepAngle: true }
+              }
+            });
+
+            link.appendLabel({
+              attrs: {
+                text: {
+                  text: 'targetRole',
+                  fill: 'black',
+                  fontSize: 12
+                }
+              },
+              position: {
+                distance: 0.8,
+                offset: { x: 0, y: 10 },
+                args: { keepDirection: true, keepAngle: true }
+              }
+            });
+
+            link.appendLabel({
+              attrs: {
+                text: {
+                  text: '→',
+                  fill: 'black',
+                  fontSize: 14,
+                },
+              },
+              position: {
+                distance: 0.5,
+                offset: { x: 0, y: 10 },
+                args: { keepDirection: true, keepAngle: true }
+
+              }
+            });
+
+
+
             console.log(`Relation '${rawType}' gestartet mit`, linkSourceElement);
 
             paperContainer.value?.addEventListener('mousemove', updateLinkTarget);
@@ -440,7 +519,32 @@ onMounted(() => {
         <b-button size="sm" variant="danger" @click="deleteRelation">
           Delete Relation
         </b-button>
+
+        <label>
+         1. Multiplicity:
+          <b-form-input v-model="linkSourceMultiplicity" @input="updateLinkLabels" />
+        </label>
+
+        <label>
+          1. Role:
+          <b-form-input v-model="linkSourceRole" @input="updateLinkLabels" />
+        </label>
+
+        <label>
+          2. Multiplicity:
+          <b-form-input v-model="linkTargetMultiplicity" @input="updateLinkLabels" />
+        </label>
+
+        <label>
+          2. Role:
+          <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
+        </label>
+        <label>
+          Arrow:
+          <b-form-input v-model="linkArrowLabel" @input="updateLinkLabels" />
+        </label>
       </div>
+
     </div>
   </div>
 </template>
