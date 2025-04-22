@@ -140,6 +140,14 @@ function updateLinkLabels() {
 }
 
 
+function convertGraphToJson() {
+  const graphJson = graph.toJSON();
+  console.log('Graph as JSON:', JSON.stringify(graphJson));
+}
+
+function resetGraph() {
+  graph.clear();
+}
 
 
 function deleteAllRelations() {
@@ -488,6 +496,10 @@ onMounted(() => {
           <div class="palette-item" data-type="aggregation" draggable="true">◇</div>
           <div class="palette-item" data-type="composition" draggable="true">◆</div>
           <div class="palette-item" data-type="generalization" draggable="true">△</div>
+          <div class="submit-reset-buttons">
+            <button class="submit-button" @click="convertGraphToJson">Submit</button>
+            <button class="reset-button" @click="resetGraph">Reset</button>
+          </div>
         </div>
       </div>
       <div ref="paperContainer" class="paper-container"></div>
@@ -518,26 +530,26 @@ onMounted(() => {
         </b-button>
 
         <label>
-          1. Multiplicity:
+          1st Multiplicity:
           <b-form-input v-model="linkSourceMultiplicity" @input="updateLinkLabels" />
         </label>
 
         <label>
-          1. Role:
+          1st Role:
           <b-form-input v-model="linkSourceRole" @input="updateLinkLabels" />
         </label>
 
         <label>
-          2. Multiplicity:
+          2nd Multiplicity:
           <b-form-input v-model="linkTargetMultiplicity" @input="updateLinkLabels" />
         </label>
 
         <label>
-          2. Role:
+          2nd Role:
           <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
         </label>
         <label>
-          Arrow:
+          Description
           <b-form-input v-model="linkArrowLabel" @input="updateLinkLabels" />
         </label>
       </div>
@@ -608,6 +620,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  font-size: 0.8rem;
 }
 
 .label {
@@ -630,5 +643,59 @@ onMounted(() => {
   stroke: #ff6600;
   stroke-width: 2;
   fill: rgba(255, 102, 0, 0.1);
+}
+
+.relation-links {
+  display: flex;
+  flex-direction: column;
+  padding-right: 20px;
+}
+
+.relation-links a {
+  text-decoration: none;
+  color: #333;
+  padding: 10px 0;
+  position: relative;
+}
+
+.relation-links a:last-child {
+  border-bottom: 2px solid #ccc;
+}
+
+.submit-reset-buttons {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.submit-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  background-color: #007bff;
+  margin-bottom: 10px;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}
+
+.reset-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  background-color: #f0ad4e;
+}
+
+.reset-button:hover {
+  background-color: #ec971f;
 }
 </style>
