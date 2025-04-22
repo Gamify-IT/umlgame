@@ -5,10 +5,16 @@ import { dummyQuestions } from "../ts/Questions/dummyQuestions";
 import { PlayerStats } from "../ts/player";
 import UmlTemplate from "../components/UmlTemplate.vue";
 import heroImage from "../assets/Characters/Hero.jpg";
+import App from './App.vue';
 
+
+const emit = defineEmits<{
+  (event: 'go-back-to-menu'): void;
+}>();
 const scene = ref("forest");
 const currentNodeId = ref("start");
-
+const showPopup = ref(false);
+const showMenu = ref(false);
 
 const currentNode = computed(() => storyData.find((node) => node.id === currentNodeId.value));
 const lifeArray = computed(() => {
@@ -73,12 +79,30 @@ function skipText() {
 }
 
 
+const exit = () => {
+  showPopup.value = true;
+};
+
+
+const continueStory = () => {
+  showPopup.value = false; 
+};
+
+const goBackToMenu = () => {
+ 
+  showPopup.value = false; 
+
+  emit("go-back-to-menu");
+};
+
 
 </script>
 
 <template>
   <div :class="sceneBackground" class="background">
     <img :src="heroImage" alt="Hero" class="character-left" />
+    <button class="pixel-font exit-button" @click="exit">X</button>
+
     <div id="life-display">
       <img
     v-for="(full, index) in lifeArray"
@@ -129,11 +153,76 @@ function skipText() {
       </div>
       </div>
     </div>
+
+      <!-- Exit Button-->
+      <div v-if="showPopup" class="popup-overlay">
+      <div class="popup-content">
+        <p>Do you want to continue or leave the game?</p>
+        <button @click="continueStory">Continue</button>
+        <button @click="goBackToMenu">Exit</button>
+      </div>
+    </div>
+    <App v-if="showMenu" />
  
 </template>
 
 
 <style scoped>
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.popup-content button {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.popup-content button:hover {
+  background-color: #666;
+}
+
+.exit-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #000; 
+  border: 2px solid #fff; 
+  color: #fff; 
+  font-size: 24px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+}
+.exit-button:hover {
+  background-color: #444; 
+}
 
 .background {
   position: relative;

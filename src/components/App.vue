@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import Story from './components/Story.vue'
+import Story from './Story.vue'
 
 const showMenu = ref(true);
 const isFading = ref(false);
@@ -25,6 +25,11 @@ function showHelp() {
 function leaveGame() {
   window.close() 
 }
+
+function goBackToMenu() {
+  showMenu.value = true;
+  showStory.value = false;
+}
 </script>
 
 <template>
@@ -37,7 +42,7 @@ function leaveGame() {
     <button class="menu-button pixel-font" @click="leaveGame">Leave</button>
   </div>
 
-  <Story v-if="showStory" />
+  <Story v-if="showStory" @go-back-to-menu="goBackToMenu"/>
 </template>
 
 <style scoped>
