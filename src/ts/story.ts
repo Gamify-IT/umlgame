@@ -192,10 +192,10 @@ export interface StoryNode {
       },
       {
         id: "rebel_hideout_entrance",
-        text: "You hear rumors of a hidden door behind a tavern. But it’s watched. A shady merchant leans against a wall nearby, eyeing you.",
+        text: "Whispers speak of a rebel contact point near the old aqueduct ruins beyond the city walls. Ivy-choked stones hide more than age. A shady merchant leans against a crumbled archway, eyeing you.",
         choices: [
           { text: "Talk to the merchant for information", nextId: "merchant_hint" },
-          { text: "Sneak past into the tavern", nextId: "rebel_hideout_sneak" }
+          { text: "Search the ruins yourself", nextId: "rebel_hideout_sneak" }
         ],
         scene: "city"
       },
@@ -208,14 +208,14 @@ export interface StoryNode {
       },
       {
         id: "rebel_hideout_sneak",
-        text: "You slip past the watchful eyes, duck through the shadows, and find a concealed hatch. With quiet effort, you descend into the rebels’ domain.",
+        text: "You move quietly through the underbrush near the aqueduct ruins. Behind a fallen statue, you uncover a concealed stone slab. With careful effort, you lift it, revealing stairs descending into the earth — the rebels' true refuge.",
         questionId: "1",
         nextIdAfterQuestion: "rebel_hideout",
         scene: "city"
       },
       {
         id: "rebel_hideout",
-        text: "A narrow room hums with quiet urgency. Maps litter the walls. A scarred woman — clearly the leader — meets your gaze. 'We don’t have time for doubts,' she says. 'You came here for a reason. So what is it?'",
+        text: "Under the cracked arches of the old aqueduct, the rebels gather around makeshift tables lit by oil lanterns. Vines hang from the stonework, and the scent of damp earth clings to the air. A scarred woman — clearly the leader — steps forward from the shadows. 'We don’t have time for doubts,' she says. 'You came here for a reason. So what is it?'",
         choices: [
           { text: "I want to help", nextId: "side_healer_intro" },
           { text: "I’m still weighing my options", nextId: "mayor_offer" }
