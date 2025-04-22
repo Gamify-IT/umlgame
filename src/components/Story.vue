@@ -64,6 +64,14 @@ if (isCorrect && currentNode.value?.nextIdAfterQuestion){
 }
 }
 
+function skipText() {
+  if (!textFinished.value && currentNode.value?.text) {
+    if (typingTimeout) clearTimeout(typingTimeout);
+    displayedText.value = currentNode.value.text;
+    textFinished.value = true;
+  }
+}
+
 
 
 </script>
@@ -107,6 +115,9 @@ if (isCorrect && currentNode.value?.nextIdAfterQuestion){
     </div>
     <div class="text-box">
         <h2 class="pixel-font">{{ displayedText }}</h2>
+        <button v-if="!textFinished" @click="skipText" class="pixel-font story-button">
+         Skip
+        </button>
 
         <!-- Falls es normale Story-Entscheidungen gibt -->
         <div v-if="textFinished && currentNode?.choices">
@@ -213,6 +224,19 @@ if (isCorrect && currentNode.value?.nextIdAfterQuestion){
   height: 700px; 
   z-index: 1; 
   image-rendering: auto; 
+}
+
+.skip-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #333;
+  border: 2px solid white;
+  padding: 6px 12px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 11;
 }
 
 </style>
