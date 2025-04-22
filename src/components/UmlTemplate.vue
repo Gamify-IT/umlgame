@@ -530,23 +530,22 @@ onMounted(() => {
         </b-button>
 
         <label>
-          1st Multiplicity:
+          Source Multiplicity:
           <b-form-input v-model="linkSourceMultiplicity" @input="updateLinkLabels" />
         </label>
 
         <label>
-          1st Role:
+          Source Role:
           <b-form-input v-model="linkSourceRole" @input="updateLinkLabels" />
         </label>
 
         <label>
-          2nd Multiplicity:
+          Target Multiplicity:
           <b-form-input v-model="linkTargetMultiplicity" @input="updateLinkLabels" />
         </label>
 
         <label>
-
-          2nd Role:
+          Target Role:
           <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
         </label>
         <label>
@@ -621,7 +620,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-size: 12px;
+  font-size: 11px;
 
 }
 
