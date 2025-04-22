@@ -17,7 +17,7 @@ const linkSourceMultiplicity = ref('');
 const linkSourceRole = ref('');
 const linkTargetMultiplicity = ref('');
 const linkTargetRole = ref('');
-const linkArrowLabel = ref('→');
+const linkArrowLabel = ref('');
 
 const labelText = ref('');
 const stuff = ref('');
@@ -128,16 +128,19 @@ function updateLinkLabels() {
   selectedLink.value.label(1, {
     attrs: { text: { text: linkSourceRole.value } }
   });
-  selectedLink.value.label(3, {
+  selectedLink.value.label(2, {
     attrs: { text: { text: linkTargetMultiplicity.value } }
   });
-  selectedLink.value.label(4, {
+  selectedLink.value.label(3, {
     attrs: { text: { text: linkTargetRole.value } }
   });
-  selectedLink.value.label(5, {
+  selectedLink.value.label(4, {
     attrs: { text: { text: linkArrowLabel.value } }
   });
 }
+
+
+
 
 function deleteAllRelations() {
   if (!selectedElement.value) return;
@@ -338,11 +341,9 @@ onMounted(() => {
 
             graph.addCell(link);
 
-            // Quelle: Multiplizität (oben links)
             link.appendLabel({
               attrs: {
                 text: {
-                  text: '1',
                   fill: 'black',
                   fontSize: 12
                 }
@@ -358,7 +359,6 @@ onMounted(() => {
             link.appendLabel({
               attrs: {
                 text: {
-                  text: 'sourceRole',
                   fill: 'black',
                   fontSize: 12
                 }
@@ -374,7 +374,6 @@ onMounted(() => {
             link.appendLabel({
               attrs: {
                 text: {
-                  text: '0..*',
                   fill: 'black',
                   fontSize: 12
                 }
@@ -389,7 +388,6 @@ onMounted(() => {
             link.appendLabel({
               attrs: {
                 text: {
-                  text: 'targetRole',
                   fill: 'black',
                   fontSize: 12
                 }
@@ -404,7 +402,6 @@ onMounted(() => {
             link.appendLabel({
               attrs: {
                 text: {
-                  text: '→',
                   fill: 'black',
                   fontSize: 14,
                 },
@@ -521,7 +518,7 @@ onMounted(() => {
         </b-button>
 
         <label>
-         1. Multiplicity:
+          1. Multiplicity:
           <b-form-input v-model="linkSourceMultiplicity" @input="updateLinkLabels" />
         </label>
 
