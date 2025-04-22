@@ -545,11 +545,12 @@ onMounted(() => {
         </label>
 
         <label>
+
           2nd Role:
           <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
         </label>
         <label>
-          Description
+          Description:
           <b-form-input v-model="linkArrowLabel" @input="updateLinkLabels" />
         </label>
       </div>
@@ -620,7 +621,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-size: 0.8rem;
+  font-size: 12px;
+
 }
 
 .label {
