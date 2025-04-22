@@ -13,6 +13,11 @@ const props = defineProps<{ questionId: string }>();
 
 const selectedElement = ref<dia.Element | null>(null);
 const selectedLink = ref<dia.Link | null>(null);
+const linkSourceMultiplicity = ref('');
+const linkSourceRole = ref('');
+const linkTargetMultiplicity = ref('');
+const linkTargetRole = ref('');
+const linkArrowLabel = ref('');
 
 const labelText = ref('');
 const stuff = ref('');
@@ -28,34 +33,6 @@ const classColors = {
   enum: '#d3f3d3',
 };
 
-function resetElementStyle(element: dia.Element) {
-  const elementType = element.get('type');
-  let originalFill: string;
-  switch (elementType) {
-    case 'InterfaceRect':
-      originalFill = '#cce5ff';
-      break;
-    case 'AbstractRect':
-      originalFill = '#ffe6cc';
-      break;
-    case 'EnumRect':
-      originalFill = '#d3f3d3';
-      break;
-    default:
-      originalFill = 'white';
-      break;
-  }
-
-  element.attr({
-    body: {
-      stroke: 'black',
-      strokeWidth: 2,
-      fill: originalFill
-    }
-  });
-
-}
-
 
 function isLinkType(type: string): type is LinkType {
   return ["dependency", "association", "aggregation", "composition", "generalization"].includes(type);
@@ -64,7 +41,14 @@ function isLinkType(type: string): type is LinkType {
 function handleLinkClick(linkView: dia.LinkView) {
   selectedLink.value = linkView.model;
   selectedElement.value = null;
+
+  const labels = linkView.model.get('labels') || [];
+  linkSourceMultiplicity.value = labels[0]?.attrs?.text?.text || '';
+  linkSourceRole.value = labels[1]?.attrs?.text?.text || '';
+  linkTargetMultiplicity.value = labels[3]?.attrs?.text?.text || '';
+  linkTargetRole.value = labels[4]?.attrs?.text?.text || '';
 }
+
 
 function deleteRelation() {
   if (selectedLink.value) {
@@ -76,10 +60,6 @@ function deleteRelation() {
 function handleElementClick(elementView: dia.ElementView) {
   const clickedElement = elementView.model;
 
-  if (selectedElement.value && selectedElement.value.id !== clickedElement.id) {
-    resetElementStyle(selectedElement.value as dia.Element);
-  }
-
   selectedElement.value = clickedElement;
 
   labelText.value = clickedElement.attr('label/text');
@@ -87,8 +67,6 @@ function handleElementClick(elementView: dia.ElementView) {
   stuff2.value = clickedElement.attr('thirdLabel/text');
   selectedLink.value = null;
 
-  clickedElement.attr('body/stroke', '#f1c40f');
-  clickedElement.attr('body/fill', 'rgba(241, 196, 15, 0.3)');
 }
 
 
@@ -139,6 +117,36 @@ function updateMethods() {
     selectedElement.value.attr('thirdLabel/text', stuff2.value);
     adjustElementHeight();
   }
+}
+
+function updateLinkLabels() {
+  if (!selectedLink.value) return;
+
+  selectedLink.value.label(0, {
+    attrs: { text: { text: linkSourceMultiplicity.value } }
+  });
+  selectedLink.value.label(1, {
+    attrs: { text: { text: linkSourceRole.value } }
+  });
+  selectedLink.value.label(2, {
+    attrs: { text: { text: linkTargetMultiplicity.value } }
+  });
+  selectedLink.value.label(3, {
+    attrs: { text: { text: linkTargetRole.value } }
+  });
+  selectedLink.value.label(4, {
+    attrs: { text: { text: linkArrowLabel.value } }
+  });
+}
+
+
+function convertGraphToJson() {
+  const graphJson = graph.toJSON();
+  console.log('Graph as JSON:', JSON.stringify(graphJson));
+}
+
+function resetGraph() {
+  graph.clear();
 }
 
 
@@ -340,6 +348,82 @@ onMounted(() => {
             }
 
             graph.addCell(link);
+
+            link.appendLabel({
+              attrs: {
+                text: {
+                  fill: 'black',
+                  fontSize: 12
+                }
+              },
+              position: {
+                distance: 0.2,
+                offset: { x: 0, y: -15 },
+                args: { keepDirection: true, keepAngle: true }
+
+              }
+            });
+
+            link.appendLabel({
+              attrs: {
+                text: {
+                  fill: 'black',
+                  fontSize: 12
+                }
+              },
+              position: {
+                distance: 0.2,
+                offset: { x: 0, y: 10 },
+                args: { keepDirection: true, keepAngle: true }
+
+              }
+            });
+
+            link.appendLabel({
+              attrs: {
+                text: {
+                  fill: 'black',
+                  fontSize: 12
+                }
+              },
+              position: {
+                distance: 0.8,
+                offset: { x: 0, y: -15 },
+                args: { keepDirection: true, keepAngle: true }
+              }
+            });
+
+            link.appendLabel({
+              attrs: {
+                text: {
+                  fill: 'black',
+                  fontSize: 12
+                }
+              },
+              position: {
+                distance: 0.8,
+                offset: { x: 0, y: 10 },
+                args: { keepDirection: true, keepAngle: true }
+              }
+            });
+
+            link.appendLabel({
+              attrs: {
+                text: {
+                  fill: 'black',
+                  fontSize: 14,
+                },
+              },
+              position: {
+                distance: 0.5,
+                offset: { x: 0, y: 10 },
+                args: { keepDirection: true, keepAngle: true }
+
+              }
+            });
+
+
+
             console.log(`Relation '${rawType}' gestartet mit`, linkSourceElement);
 
             paperContainer.value?.addEventListener('mousemove', updateLinkTarget);
@@ -412,6 +496,10 @@ onMounted(() => {
           <div class="palette-item" data-type="aggregation" draggable="true">◇</div>
           <div class="palette-item" data-type="composition" draggable="true">◆</div>
           <div class="palette-item" data-type="generalization" draggable="true">△</div>
+          <div class="submit-reset-buttons">
+            <button class="submit-button" @click="convertGraphToJson">Submit</button>
+            <button class="reset-button" @click="resetGraph">Reset</button>
+          </div>
         </div>
       </div>
       <div ref="paperContainer" class="paper-container"></div>
@@ -440,7 +528,33 @@ onMounted(() => {
         <b-button size="sm" variant="danger" @click="deleteRelation">
           Delete Relation
         </b-button>
+
+        <label>
+          1st Multiplicity:
+          <b-form-input v-model="linkSourceMultiplicity" @input="updateLinkLabels" />
+        </label>
+
+        <label>
+          1st Role:
+          <b-form-input v-model="linkSourceRole" @input="updateLinkLabels" />
+        </label>
+
+        <label>
+          2nd Multiplicity:
+          <b-form-input v-model="linkTargetMultiplicity" @input="updateLinkLabels" />
+        </label>
+
+        <label>
+
+          2nd Role:
+          <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
+        </label>
+        <label>
+          Description:
+          <b-form-input v-model="linkArrowLabel" @input="updateLinkLabels" />
+        </label>
       </div>
+
     </div>
   </div>
 </template>
@@ -507,6 +621,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  font-size: 12px;
+
 }
 
 .label {
@@ -529,5 +645,59 @@ onMounted(() => {
   stroke: #ff6600;
   stroke-width: 2;
   fill: rgba(255, 102, 0, 0.1);
+}
+
+.relation-links {
+  display: flex;
+  flex-direction: column;
+  padding-right: 20px;
+}
+
+.relation-links a {
+  text-decoration: none;
+  color: #333;
+  padding: 10px 0;
+  position: relative;
+}
+
+.relation-links a:last-child {
+  border-bottom: 2px solid #ccc;
+}
+
+.submit-reset-buttons {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.submit-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  background-color: #007bff;
+  margin-bottom: 10px;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}
+
+.reset-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  background-color: #f0ad4e;
+}
+
+.reset-button:hover {
+  background-color: #ec971f;
 }
 </style>
