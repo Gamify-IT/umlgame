@@ -1,21 +1,32 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Story from './components/Story.vue'
+import mysteryMusic from './assets/mystery-music-loop.mp3'
 
+// States
 const showMenu = ref(true);
 const isFading = ref(false);
 const showStory = ref(false);
+const bgAudio = ref<HTMLAudioElement | null>(null);
 
+// Methoden
 function startGame() {
   isFading.value = true;
 
   setTimeout(() => {
     showMenu.value = false;
     showStory.value = true;
-  }, 1000); 
+
+    if (bgAudio.value) {
+      bgAudio.value.play().catch(err => {
+        console.warn("Audio could not be played", err);
+      });
+    }
+  }, 1000);
+
   setTimeout(() => {
     isFading.value = false;
-  }, 1800); 
+  }, 1800);
 }
 
 function showHelp() {
@@ -23,13 +34,13 @@ function showHelp() {
 }
 
 function leaveGame() {
-  window.close() 
+  window.close()
 }
 </script>
 
 <template>
   <div class="fade-overlay" v-if="isFading"></div>
- 
+
   <div class="menu-container" v-if="showMenu">
     <h1 class="game-title pixel-font">Retro Adventure</h1>
     <button class="menu-button pixel-font" @click="startGame">Play</button>
@@ -38,6 +49,8 @@ function leaveGame() {
   </div>
 
   <Story v-if="showStory" />
+
+  <audio ref="bgAudio" :src="mysteryMusic" loop :volume="0.3" />
 </template>
 
 <style scoped>

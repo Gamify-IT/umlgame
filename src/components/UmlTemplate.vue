@@ -245,8 +245,8 @@ onMounted(() => {
               const loopLink = new shapes.standard.Link({
                 source: { id: targetElement.id },
                 target: { id: targetElement.id },
-                router: { name: 'manhattan' }, 
-                connector: { name: 'rounded' }, 
+                router: { name: 'manhattan' },
+                connector: { name: 'rounded' },
                 attrs: {
                   line: {
                     stroke: 'black',
@@ -256,7 +256,7 @@ onMounted(() => {
                 },
                 labels: [
                   {
-                    position: 0.1, 
+                    position: 0.05,
                     attrs: {
                       text: {
                         fontSize: 14,
@@ -265,7 +265,7 @@ onMounted(() => {
                     },
                   },
                   {
-                    position: 0.2, 
+                    position: 0.2,
                     attrs: {
                       text: {
                         fontSize: 14,
@@ -274,7 +274,7 @@ onMounted(() => {
                     },
                   },
                   {
-                    position: 0.7,  
+                    position: 0.8,
                     attrs: {
                       text: {
                         fontSize: 14,
@@ -284,7 +284,7 @@ onMounted(() => {
                     },
                   },
                   {
-                    position: 0.8,
+                    position: 0.7,
                     attrs: {
                       text: {
                         fontSize: 14,
