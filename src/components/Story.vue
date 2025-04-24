@@ -259,11 +259,11 @@ const goBackToMenu = () => {
 }
 .question-box {
   position: absolute;
-  top: -320px; 
+  top: -420px; 
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  max-width: 600px;
+  width: 1200px;
+
   background: rgba(255, 255, 255, 0.9);
   border-radius: 10px;
   padding: 20px;
