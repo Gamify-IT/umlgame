@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { dia, shapes, util } from '@joint/core';
+import { dia, shapes } from '@joint/core';
 import { onMounted, ref, defineProps, nextTick } from "vue";
 import { BFormInput, BFormTextarea } from "bootstrap-vue-3";
 import { CustRect, InterfaceRect, AbstractRect, EnumRect } from '../ts/links';
@@ -238,7 +238,85 @@ onMounted(() => {
           const targetElementView = elementViews.find(view => view.model.isElement());
 
           if (targetElementView) {
-            link.target(targetElementView.model);
+            const targetElement = targetElementView.model;
+
+            if (linkSourceElement && linkSourceElement.id === targetElement.id) {
+
+              const loopLink = new shapes.standard.Link({
+                source: { id: targetElement.id },
+                target: { id: targetElement.id },
+                router: { name: 'manhattan' },
+                connector: { name: 'rounded' },
+                attrs: {
+                  line: {
+                    stroke: 'black',
+                    strokeWidth: 2,
+                    fill: 'none',
+                  },
+                },
+                labels: [
+                  {
+                    position: 0.05,
+                    attrs: {
+                      text: {
+                        fontSize: 14,
+                        fill: 'black',
+                      },
+                    },
+                  },
+                  {
+                    position: 0.2,
+                    attrs: {
+                      text: {
+                        fontSize: 14,
+                        fill: 'black',
+                      },
+                    },
+                  },
+                  {
+                    position: 0.8,
+                    attrs: {
+                      text: {
+                        fontSize: 14,
+                        fill: 'black',
+                        dx: 20,
+                      },
+                    },
+                  },
+                  {
+                    position: 0.7,
+                    attrs: {
+                      text: {
+                        fontSize: 14,
+                        fill: 'black',
+                        dx: 20,
+                      },
+                    },
+                  },
+                ],
+              });
+
+
+
+              loopLink.attr({
+                line: {
+                  stroke: 'black',
+                  strokeWidth: 2,
+                  targetMarker: {
+                    type: 'path',
+                    d: 'M 10 -5 0 0 10 5 z',
+                    fill: 'white',
+                    stroke: 'black'
+                  }
+                }
+              });
+
+              graph.addCell(loopLink);
+              link.remove();
+            } else {
+              link.target(targetElement);
+            }
+
             targetElementView.model.attr('body/stroke', 'blue');
             setTimeout(() => {
               targetElementView.model.attr('body/stroke', 'black');

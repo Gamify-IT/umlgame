@@ -2,20 +2,30 @@
 import { ref } from 'vue'
 import Story from './Story.vue'
 
+// States
 const showMenu = ref(true);
 const isFading = ref(false);
 const showStory = ref(false);
+const bgAudio = ref<HTMLAudioElement | null>(null);
 
+// Methoden
 function startGame() {
   isFading.value = true;
 
   setTimeout(() => {
     showMenu.value = false;
     showStory.value = true;
-  }, 1000); 
+
+    if (bgAudio.value) {
+      bgAudio.value.play().catch(err => {
+        console.warn("Audio could not be played", err);
+      });
+    }
+  }, 1000);
+
   setTimeout(() => {
     isFading.value = false;
-  }, 1800); 
+  }, 1800);
 }
 
 function showHelp() {
@@ -23,7 +33,7 @@ function showHelp() {
 }
 
 function leaveGame() {
-  window.close() 
+  window.close()
 }
 
 function goBackToMenu() {
@@ -34,7 +44,7 @@ function goBackToMenu() {
 
 <template>
   <div class="fade-overlay" v-if="isFading"></div>
- 
+
   <div class="menu-container" v-if="showMenu">
     <h1 class="game-title pixel-font">Retro Adventure</h1>
     <button class="menu-button pixel-font" @click="startGame">Play</button>
@@ -42,7 +52,7 @@ function goBackToMenu() {
     <button class="menu-button pixel-font" @click="leaveGame">Leave</button>
   </div>
 
-  <Story v-if="showStory" @go-back-to-menu="goBackToMenu"/>
+  <Story v-if="showStory" />
 </template>
 
 <style scoped>
