@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Story from './Story.vue'
+import mysteryMusic from '../assets/mystery-music-loop.mp3'
 
 // States
 const showMenu = ref(true);
@@ -53,6 +54,7 @@ function goBackToMenu() {
   </div>
 
   <Story v-if="showStory" />
+  <audio ref="bgAudio" :src="mysteryMusic" loop :volume="0.3" />
 </template>
 
 <style scoped>
