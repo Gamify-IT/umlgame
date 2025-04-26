@@ -3,7 +3,10 @@ import { dia, shapes } from '@joint/core';
 import { onMounted, ref, defineProps, nextTick } from "vue";
 import { BFormInput, BFormTextarea } from "bootstrap-vue-3";
 import { CustRect, InterfaceRect, AbstractRect, EnumRect } from '../ts/links';
+import { getUmlTasks } from '../ts/minigame-rest-client';
 
+
+const configurationId = ref("");
 
 const namespace = shapes;
 const graph = new dia.Graph({}, { cellNamespace: namespace });
@@ -32,6 +35,23 @@ const classColors = {
   circle: 'lightgray',
   enum: '#d3f3d3',
 };
+
+
+async function loadUmlTasks() {
+  try {
+    let locationParts = window.location.toString().split("/");
+    configurationId.value = locationParts[locationParts.length - 1];
+
+    const response = await getUmlTasks(configurationId.value);
+    const umlTasks = response.data;
+
+    console.log("Loaded UML Tasks:", umlTasks);
+    return umlTasks;
+  } catch (error) {
+    console.error("Error loading UML Tasks:", error);
+    return null;
+  }
+}
 
 
 function isLinkType(type: string): type is LinkType {
@@ -166,8 +186,14 @@ let hoveredElement: dia.Element | null = null;
 
 let paper: dia.Paper;
 
-onMounted(() => {
-  nextTick(() => {
+onMounted(async () => {
+  nextTick(async () => {
+
+    const umlTasks = await loadUmlTasks();
+    if (umlTasks) {
+      console.log("UML Tasks:", umlTasks);
+    }
+
     if (paperContainer.value) {
       paper = new dia.Paper({
         el: paperContainer.value,
