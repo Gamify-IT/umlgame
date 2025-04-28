@@ -270,6 +270,7 @@ const goBackToMenu = () => {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
   z-index: 10;
+  
 }
 
 #life-display {

@@ -197,8 +197,9 @@ onMounted(async () => {
     if (paperContainer.value) {
       paper = new dia.Paper({
         el: paperContainer.value,
+        
         model: graph,
-        width: 800,
+        width: 2000,
         height: 700,
         background: { color: '#F5F5F5' },
         cellViewNamespace: namespace
@@ -606,7 +607,10 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <div ref="paperContainer" class="paper-container"></div>
+      <div class="paper-container">
+      <div ref="paperContainer" class="paper-inner"></div>
+    </div>
+  </div>
       <div class="right" v-if="selectedElement">
         <b-button size="sm" variant="warning" @click="deleteAllRelations">
           Delete All Relations
@@ -659,7 +663,7 @@ onMounted(async () => {
       </div>
 
     </div>
-  </div>
+
 </template>
 
 <style scoped>
@@ -670,6 +674,8 @@ onMounted(async () => {
 
 .uml-wrapper {
   position: relative;
+  display: flex;
+  gap: 20px;
 }
 
 .palette {
@@ -703,10 +709,19 @@ onMounted(async () => {
 
 
 .paper-container {
+  flex: 1;
   width: 800px;
-  height: 600px;
+  height: 730px;
   border: 2px solid rgb(226, 220, 201);
   background: #f5f5f5;
+  overflow: scroll;
+ 
+}
+
+
+.paper-inner {
+  width: 10000px; 
+
 }
 
 .delete-button {
@@ -725,7 +740,7 @@ onMounted(async () => {
   flex-direction: column;
   gap: 10px;
   font-size: 11px;
-
+  width: 300px; 
 }
 
 .label {
