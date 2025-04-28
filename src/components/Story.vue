@@ -58,9 +58,13 @@ function typeWriter(text: string, i: number) {
     typingTimeout = setTimeout(() => typeWriter(text, i + 1), 40); 
   } else {
     textFinished.value = true; 
-    setTimeout(() => {
-      isQuestionLoaded.value = true; 
-    }, 2000);
+    if (currentNode.value?.questionId) {
+      setTimeout(() => {
+        isQuestionLoaded.value = true;
+      }, 2000); 
+    } else {
+      isQuestionLoaded.value = false;
+  }
   }
 }
 
@@ -80,9 +84,13 @@ function skipText() {
     if (typingTimeout) clearTimeout(typingTimeout);
     displayedText.value = currentNode.value.text;
     textFinished.value = true;
-    setTimeout(() => {
-      isQuestionLoaded.value = true; 
-    }, 2000);
+    if (currentNode.value?.questionId) {
+      setTimeout(() => {
+        isQuestionLoaded.value = true;
+      }, 2000); 
+    } else {
+      isQuestionLoaded.value = false;
+  }
   }
 }
 
