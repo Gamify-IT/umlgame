@@ -36,6 +36,7 @@ const currentQuestion = computed(() =>
 const sceneBackground = computed(() => `scene-${scene.value}`);
 const displayedText = ref("");
 const textFinished = ref(false);
+const isQuestionLoaded = ref(false);
 
 let typingTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -45,6 +46,7 @@ watch(
     if (typingTimeout) clearTimeout(typingTimeout);
     displayedText.value = "";
     textFinished.value = false;
+    isQuestionLoaded.value = false
     if (newText) typeWriter(newText, 0);
   },
   { immediate: true }
@@ -56,6 +58,9 @@ function typeWriter(text: string, i: number) {
     typingTimeout = setTimeout(() => typeWriter(text, i + 1), 40); 
   } else {
     textFinished.value = true; 
+    setTimeout(() => {
+      isQuestionLoaded.value = true; 
+    }, 2000);
   }
 }
 
@@ -75,6 +80,9 @@ function skipText() {
     if (typingTimeout) clearTimeout(typingTimeout);
     displayedText.value = currentNode.value.text;
     textFinished.value = true;
+    setTimeout(() => {
+      isQuestionLoaded.value = true; 
+    }, 2000);
   }
 }
 
@@ -116,6 +124,7 @@ const goBackToMenu = () => {
 
       <div v-if="currentNode?.questionId" class="question-box">
     <!-- Falls es eine Uml Frage ist -->
+    <div class="question-text pixel-font" v-if="currentNode?.questionId === '2' && textFinished"> Here will stand the question</div>
       <UmlTemplate
           v-if="currentNode?.questionId === '2' && textFinished" 
           :questionId="currentNode.questionId" 
@@ -137,7 +146,7 @@ const goBackToMenu = () => {
       </div>
 
     </div>
-    <div class="text-box">
+    <div div v-if="!isQuestionLoaded" class="text-box">
         <h2 class="pixel-font">{{ displayedText }}</h2>
         <button v-if="!textFinished" @click="skipText" class="pixel-font story-button">
          Skip
@@ -270,7 +279,7 @@ const goBackToMenu = () => {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
   z-index: 10;
-  
+  overflow: auto;
 }
 
 #life-display {
