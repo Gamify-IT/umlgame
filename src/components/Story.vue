@@ -132,7 +132,7 @@ const goBackToMenu = () => {
 
       <div v-if="currentNode?.questionId" class="question-box">
     <!-- Falls es eine Uml Frage ist -->
-    <div class="question-text pixel-font" v-if="currentNode?.questionId === '2' && textFinished"> Here will stand the question</div>
+    <div class="question-text pixel-font" v-if="currentNode?.questionId === '2' && textFinished"></div>
       <UmlTemplate
           v-if="currentNode?.questionId === '2' && textFinished" 
           :questionId="currentNode.questionId" 

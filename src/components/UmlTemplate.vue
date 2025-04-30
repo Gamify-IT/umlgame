@@ -4,8 +4,11 @@ import { onMounted, ref, defineProps, nextTick } from "vue";
 import { BFormInput, BFormTextarea } from "bootstrap-vue-3";
 import { CustRect, InterfaceRect, AbstractRect, EnumRect } from '../ts/links';
 import { getUmlTasks } from '../ts/minigame-rest-client';
+import { dummyConfig, Config } from '../ts/models';
 
 
+const currentTaskIndex = ref(0);
+const currentTask = ref(dummyConfig.umlTasks[currentTaskIndex.value]);
 const configurationId = ref("");
 
 const namespace = shapes;
@@ -36,22 +39,127 @@ const classColors = {
   enum: '#d3f3d3',
 };
 
+let config: Config;
 
 async function loadUmlTasks() {
   try {
     let locationParts = window.location.toString().split("/");
     configurationId.value = locationParts[locationParts.length - 1];
 
-    const response = await getUmlTasks(configurationId.value);
-    const umlTasks = response.data;
 
-    console.log("Loaded UML Tasks:", umlTasks);
-    return umlTasks;
+    // const response = await getUmlTasks(configurationId.value);
+    // config = response.data;
+
+    // Dummy-Daten für den Test
+    config = dummyConfig;
+
+    console.log("Loaded Config with UML Tasks:", config);
+    return config;
   } catch (error) {
     console.error("Error loading UML Tasks:", error);
     return null;
   }
 }
+
+
+const handleSubmit = () => {
+  const studentSolution = JSON.parse(convertGraphToJson());
+  const correctSolution = JSON.parse(dummyConfig.umlTasks[currentTaskIndex.value].graph);
+
+  const isMatching = compareGraphAttrs(studentSolution, correctSolution);
+
+  if (isMatching) {
+    console.log("Right answer!");
+  } else {
+    console.log("Wrong answer!");
+  }
+
+  const nextIndex = currentTaskIndex.value + 1;
+
+  if (nextIndex < dummyConfig.umlTasks.length) {
+    currentTaskIndex.value = nextIndex;
+    currentTask.value = dummyConfig.umlTasks[currentTaskIndex.value];
+    console.log("Next task:", currentTask.value.text);
+  } else {
+    console.log("No more tasks available");
+  }
+};
+
+const compareGraphAttrs = (studentGraph: any, correctGraph: any): boolean => {
+  const studentCells = studentGraph.cells;
+  const correctCells = correctGraph.cells;
+
+  const isRectCell = (cell: any) => cell.type?.includes("Rect");
+  const isLinkCell = (cell: any) => cell.type === "standard.Link";
+
+  const getCellById = (cells: any[], id: string) => cells.find(c => c.id === id);
+
+  const getLabels = (cell: any): [string, string, string] => [
+    cell.attrs?.label?.text ?? "",
+    cell.attrs?.secondaryLabel?.text ?? "",
+    cell.attrs?.thirdLabel?.text ?? "",
+  ];
+
+  const correctRects = correctCells.filter(isRectCell);
+  const studentRects = studentCells.filter(isRectCell);
+
+  for (const correctCell of correctRects) {
+    const [label1, label2, label3] = getLabels(correctCell);
+    const correctType = correctCell.type;
+
+    const match = studentRects.find((cell: any) => {
+      const [s1, s2, s3] = getLabels(cell);
+      return (
+        label1 === s1 &&
+        label2 === s2 &&
+        label3 === s3 &&
+        cell.type === correctType
+      );
+    });
+
+    if (!match) return false;
+  }
+
+  const correctLinks = correctCells.filter(isLinkCell);
+  const studentLinks = studentCells.filter(isLinkCell);
+
+  const extractLinkTexts = (link: any): string[] =>
+    (link.labels || []).map((label: any) => label?.attrs?.text?.text).filter(Boolean).sort();
+
+  const findMatchingLink = (correctLink: any): boolean => {
+    const sourceCorrect = getCellById(correctCells, correctLink.source.id);
+    const targetCorrect = getCellById(correctCells, correctLink.target.id);
+    if (!sourceCorrect || !targetCorrect) return false;
+
+    const sourceLabels = getLabels(sourceCorrect).join("|");
+    const targetLabels = getLabels(targetCorrect).join("|");
+    const correctTextLabels = extractLinkTexts(correctLink).join("|");
+
+    return studentLinks.some((studentLink: any) => {
+      const sourceStudent = getCellById(studentCells, studentLink.source.id);
+      const targetStudent = getCellById(studentCells, studentLink.target.id);
+      if (!sourceStudent || !targetStudent) return false;
+
+      const sourceStudentLabels = getLabels(sourceStudent).join("|");
+      const targetStudentLabels = getLabels(targetStudent).join("|");
+      const studentTextLabels = extractLinkTexts(studentLink).join("|");
+
+      return (
+        sourceLabels === sourceStudentLabels &&
+        targetLabels === targetStudentLabels &&
+        correctTextLabels === studentTextLabels
+      );
+    });
+  };
+
+  for (const correctLink of correctLinks) {
+    if (!findMatchingLink(correctLink)) return false;
+  }
+
+  return true;
+};
+
+
 
 
 function isLinkType(type: string): type is LinkType {
@@ -160,10 +268,14 @@ function updateLinkLabels() {
 }
 
 
-function convertGraphToJson() {
-  const graphJson = graph.toJSON();
-  console.log('Graph as JSON:', JSON.stringify(graphJson));
+function convertGraphToJson(): string {
+
+
+  console.log('Graph as JSON:', JSON.stringify(graph));
+
+  return JSON.stringify(graph);
 }
+
 
 function resetGraph() {
   graph.clear();
@@ -197,7 +309,7 @@ onMounted(async () => {
     if (paperContainer.value) {
       paper = new dia.Paper({
         el: paperContainer.value,
-        
+
         model: graph,
         width: 2000,
         height: 700,
@@ -567,6 +679,9 @@ onMounted(async () => {
 
 
 <template>
+  <div class="right" v-if="currentTask">
+    <h3>Aufgabe: {{ currentTask.text }}</h3>
+  </div>
   <div class="uml-wrapper" style="position: relative">
     <div class="uml-container">
       <div ref="paletteContainer" class="palette">
@@ -602,69 +717,70 @@ onMounted(async () => {
           <div class="palette-item" data-type="composition" draggable="true">◆</div>
           <div class="palette-item" data-type="generalization" draggable="true">△</div>
           <div class="submit-reset-buttons">
-            <button class="submit-button" @click="convertGraphToJson">Submit</button>
+            <button class="submit-button" @click="handleSubmit">Submit</button>
             <button class="reset-button" @click="resetGraph">Reset</button>
           </div>
         </div>
       </div>
       <div class="paper-container">
-      <div ref="paperContainer" class="paper-inner"></div>
+        <div ref="paperContainer" class="paper-inner"></div>
+      </div>
     </div>
+    <div class="right" v-if="selectedElement">
+      <b-button size="sm" variant="warning" @click="deleteAllRelations">
+        Delete All Relations
+      </b-button>
+
+      <b-button size="sm" variant="danger" @click="deleteSelectedElement">
+        Delete Object
+      </b-button>
+      <b-label class="label">
+        Classname:
+        <b-form-input v-model="labelText" @input="updateLabel" />
+      </b-label>
+      <label class="label">
+        Attributes:
+        <b-form-textarea v-model="stuff" @input="updateAttributes" />
+      </label>
+      <label class="label">
+        Methods:
+        <b-form-textarea v-model="stuff2" @input="updateMethods" />
+      </label>
+    </div>
+    <div class="right" v-if="selectedLink">
+      <b-button size="sm" variant="danger" @click="deleteRelation">
+        Delete Relation
+      </b-button>
+
+      <label>
+        Source Multiplicity:
+        <b-form-input v-model="linkSourceMultiplicity" @input="updateLinkLabels" />
+      </label>
+
+      <label>
+        Source Role:
+        <b-form-input v-model="linkSourceRole" @input="updateLinkLabels" />
+      </label>
+
+      <label>
+        Target Multiplicity:
+        <b-form-input v-model="linkTargetMultiplicity" @input="updateLinkLabels" />
+      </label>
+
+      <label>
+        Target Role:
+        <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
+      </label>
+      <label>
+        Description:
+        <b-form-input v-model="linkArrowLabel" @input="updateLinkLabels" />
+      </label>
+    </div>
+
   </div>
-      <div class="right" v-if="selectedElement">
-        <b-button size="sm" variant="warning" @click="deleteAllRelations">
-          Delete All Relations
-        </b-button>
-
-        <b-button size="sm" variant="danger" @click="deleteSelectedElement">
-          Delete Object
-        </b-button>
-        <b-label class="label">
-          Classname:
-          <b-form-input v-model="labelText" @input="updateLabel" />
-        </b-label>
-        <label class="label">
-          Attributes:
-          <b-form-textarea v-model="stuff" @input="updateAttributes" />
-        </label>
-        <label class="label">
-          Methods:
-          <b-form-textarea v-model="stuff2" @input="updateMethods" />
-        </label>
-      </div>
-      <div class="right" v-if="selectedLink">
-        <b-button size="sm" variant="danger" @click="deleteRelation">
-          Delete Relation
-        </b-button>
-
-        <label>
-          Source Multiplicity:
-          <b-form-input v-model="linkSourceMultiplicity" @input="updateLinkLabels" />
-        </label>
-
-        <label>
-          Source Role:
-          <b-form-input v-model="linkSourceRole" @input="updateLinkLabels" />
-        </label>
-
-        <label>
-          Target Multiplicity:
-          <b-form-input v-model="linkTargetMultiplicity" @input="updateLinkLabels" />
-        </label>
-
-        <label>
-          Target Role:
-          <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
-        </label>
-        <label>
-          Description:
-          <b-form-input v-model="linkArrowLabel" @input="updateLinkLabels" />
-        </label>
-      </div>
-
-    </div>
 
 </template>
+
 
 <style scoped>
 .uml-container {
@@ -715,12 +831,12 @@ onMounted(async () => {
   border: 2px solid rgb(226, 220, 201);
   background: #f5f5f5;
   overflow: scroll;
- 
+
 }
 
 
 .paper-inner {
-  width: 10000px; 
+  width: 10000px;
 
 }
 
@@ -740,7 +856,7 @@ onMounted(async () => {
   flex-direction: column;
   gap: 10px;
   font-size: 11px;
-  width: 300px; 
+  width: 300px;
 }
 
 .label {
