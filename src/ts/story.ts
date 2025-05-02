@@ -113,7 +113,7 @@ export interface StoryNode {
       text: "Dust swirls through shafts of moonlight as you wander between crumbling shelves. Among the tomes, you discover a forbidden book—a chronicle of the Queen’s shadowed past. A puzzle lies within, holding the key to her undoing.",
       questionId: "4",
       nextIdAfterQuestion: "throne_room1",
-      scene: "castle",
+      scene: "hallway",
     },
     {
       id: "dungeon",
