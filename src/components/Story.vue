@@ -6,6 +6,8 @@ import { PlayerStats } from "../ts/player";
 import UmlTemplate from "../components/UmlTemplate.vue";
 import heroImage from "../assets/Characters/Hero.jpg";
 import App from './App.vue';
+import heartEmpty from '../assets/Icons/heart_empty.jpg';
+
 
 
 const emit = defineEmits<{
@@ -39,6 +41,11 @@ const sceneBackground = computed(() => `scene-${scene.value}`);
 const displayedText = ref("");
 const textFinished = ref(false);
 const isQuestionLoaded = ref(false);
+const isGameOver = computed(() => PlayerStats.lp <= 0);
+
+const emptyLifeArray = computed(() =>
+  Array.from({ length: PlayerStats.maxLp }, () => false)
+);
 
 let typingTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -130,57 +137,66 @@ const goBackToMenu = () => {
       <img v-for="(full, index) in lifeArray" :key="index"
         :src="full ? 'src/assets/Icons/heart_full.jpg' : 'src/assets/Icons/heart_empty.jpg'" class="heart-icon" />
     </div>
+
     <div class="story-container">
-
-      <div v-if="feedbackMessage" class="feedback-message">
-        {{ feedbackMessage }}
+      <div v-if="isGameOver" class="game-over-screen">
+        <div class="game-over-hearts">
+          <img v-for="(empty, index) in emptyLifeArray" :key="'empty-' + index" :src="heartEmpty" class="heart-icon" />
+        </div>
+        <h1 class="pixel-font game-over-text">GAME OVER</h1>
+        <button @click="goBackToMenu" class="pixel-font game-over-button">Back to Menu</button>
       </div>
-      <div v-if="currentNode?.questionId" class="question-box">
-        <!-- Falls es eine Uml Frage ist -->
-        <div class="question-text pixel-font" v-if="currentNode?.questionId === '2' && textFinished"></div>
-        <UmlTemplate v-if="currentNode?.questionId === '2' && textFinished" :questionId="currentNode.questionId"
-          @answer="answerQuestion" @update-lives="answerQuestion" />
 
 
-
-        <!-- Falls eine Frage vorhanden ist -->
-        <div v-else-if="currentQuestion && textFinished">
-          <h3>{{ currentQuestion.text }}</h3>
-          <button v-for="choice in currentQuestion.choices" :key="choice.text" @click="answerQuestion(choice.correct)"
-            class="pixel-font">
-            {{ choice.text }}
-          </button>
+      <!-- Normal Story Content -->
+      <div v-if="!isGameOver">
+        <div v-if="feedbackMessage" class="feedback-message">
+          {{ feedbackMessage }}
         </div>
 
-      </div>
-      <div div v-if="!isQuestionLoaded" class="text-box">
-        <h2 class="pixel-font">{{ displayedText }}</h2>
-        <button v-if="!textFinished" @click="skipText" class="pixel-font story-button">
-          Skip
-        </button>
+        <div v-if="currentNode?.questionId" class="question-box">
+          <!-- Falls es eine Uml Frage ist -->
+          <div class="question-text pixel-font" v-if="currentNode?.questionId === '2' && textFinished"></div>
+          <UmlTemplate v-if="currentNode?.questionId === '2' && textFinished" :questionId="currentNode.questionId"
+            @answer="answerQuestion" @update-lives="answerQuestion" />
 
-        <!-- Falls es normale Story-Entscheidungen gibt -->
-        <div v-if="textFinished && currentNode?.choices">
+          <!-- Falls eine Frage vorhanden ist -->
+          <div v-else-if="currentQuestion && textFinished">
+            <h3>{{ currentQuestion.text }}</h3>
+            <button v-for="choice in currentQuestion.choices" :key="choice.text" @click="answerQuestion(choice.correct)"
+              class="pixel-font">
+              {{ choice.text }}
+            </button>
+          </div>
+        </div>
 
-          <button v-for="choice in currentNode.choices" :key="choice.nextId" @click="makeChoice(choice.nextId)"
-            class="pixel-font story-button">
-            {{ choice.text }}
+        <div v-if="!isQuestionLoaded" class="text-box">
+          <h2 class="pixel-font">{{ displayedText }}</h2>
+          <button v-if="!textFinished" @click="skipText" class="pixel-font story-button">
+            Skip
           </button>
+
+          <!-- Falls es normale Story-Entscheidungen gibt -->
+          <div v-if="textFinished && currentNode?.choices">
+            <button v-for="choice in currentNode.choices" :key="choice.nextId" @click="makeChoice(choice.nextId)"
+              class="pixel-font story-button">
+              {{ choice.text }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Exit Button-->
-  <div v-if="showPopup" class="popup-overlay">
-    <div class="popup-content">
-      <p>Do you want to continue or leave the game?</p>
-      <button @click="continueStory">Continue</button>
-      <button @click="goBackToMenu">Exit</button>
+    <!-- Exit Button-->
+    <div v-if="showPopup" class="popup-overlay">
+      <div class="popup-content">
+        <p>Do you want to continue or leave the game?</p>
+        <button @click="continueStory">Continue</button>
+        <button @click="goBackToMenu">Exit</button>
+      </div>
     </div>
+    <App v-if="showMenu" />
   </div>
-  <App v-if="showMenu" />
-
 </template>
 
 
@@ -349,7 +365,7 @@ const goBackToMenu = () => {
 
 .feedback-message {
   position: fixed;
-  top: 50%; 
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 32px;
@@ -357,14 +373,69 @@ const goBackToMenu = () => {
   padding: 10px 20px;
   border-radius: 10px;
   z-index: 1000;
-  color: white; 
-  background-color: rgba(255, 99, 71, 0.9); 
-  transition: background-color 0.3s ease, transform 0.3s ease; 
+  color: white;
+  background-color: rgba(255, 99, 71, 0.9);
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .feedback-message.right {
-  background-color: rgba(144, 238, 144, 0.9); 
+  background-color: rgba(144, 238, 144, 0.9);
 }
 
+.game-over-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  flex-direction: column;
+  text-align: center;
+}
 
+.game-over-screen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  filter: blur(8px);
+  z-index: -1;
+}
+
+.game-over-text {
+  font-size: 100px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.7);
+  margin-bottom: 20px;
+}
+
+.game-over-button {
+  font-size: 30px;
+  padding: 15px 30px;
+  background-color: #ff5733;
+  color: white;
+  border: 2px solid white;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.game-over-button:hover {
+  background-color: #c74d26;
+  transform: scale(1.1);
+}
+
+.game-over-hearts {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 </style>
