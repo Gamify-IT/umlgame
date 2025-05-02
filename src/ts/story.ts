@@ -20,13 +20,13 @@ export interface StoryNode {
       id: "river",
       text: "After hours of trudging through tangled underbrush, you emerge from the forest to find a wide river glistening under a pale sky. A solitary knight guards a weathered stone bridge. His gaze pierces through his visor. What will you do?",
       choices: [
-        { text: "Approach the knight", nextId: "talk_knight" },
+        { text: "Approach the knight", nextId: "talk_guard" },
         { text: "Look for another crossing", nextId: "sneak_guard" },
       ],
       scene: "river",
     },
     {
-      id: "talk_knight",
+      id: "talk_guard",
       text: "The knight raises his hand. 'If you wish to cross, you must answer my riddle. Only the wise may pass.'",
       questionId: "2",
       nextIdAfterQuestion: "fog",
