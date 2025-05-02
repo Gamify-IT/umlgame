@@ -348,16 +348,23 @@ const goBackToMenu = () => {
 }
 
 .feedback-message {
-  position: absolute;
-  top: 80px; 
-  left: 20px;
+  position: fixed;
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: 32px;
   font-weight: bold;
-  color: white;
-  background-color: rgba(0, 0, 0, 0.7);
   padding: 10px 20px;
   border-radius: 10px;
   z-index: 1000;
+  color: white; 
+  background-color: rgba(255, 99, 71, 0.9); 
+  transition: background-color 0.3s ease, transform 0.3s ease; 
 }
+
+.feedback-message.right {
+  background-color: rgba(144, 238, 144, 0.9); 
+}
+
 
 </style>
