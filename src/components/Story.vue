@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { storyData } from "../ts/story";
-import { dummyQuestions } from "../ts/Questions/dummyQuestions";
 import { PlayerStats } from "../ts/player";
 import UmlTemplate from "../components/UmlTemplate.vue";
 import heroImage from "../assets/Characters/Hero.jpg";
@@ -33,9 +32,7 @@ const makeChoice = (nextId: string) => {
   currentNodeId.value = nextId;
 };
 
-const currentQuestion = computed(() =>
-  dummyQuestions.find((q) => q.id === currentNode.value?.questionId)
-);
+
 
 const sceneBackground = computed(() => `scene-${scene.value}`);
 const displayedText = ref("");
@@ -156,18 +153,11 @@ const goBackToMenu = () => {
 
         <div v-if="currentNode?.questionId" class="question-box">
           <!-- Falls es eine Uml Frage ist -->
-          <div class="question-text pixel-font" v-if="currentNode?.questionId === '2' && textFinished"></div>
-          <UmlTemplate v-if="currentNode?.questionId === '2' && textFinished" :questionId="currentNode.questionId"
+          <div class="question-text pixel-font" v-if="currentNode?.questionId  && textFinished"></div>
+          <UmlTemplate v-if="currentNode?.questionId && textFinished" :questionId="currentNode.questionId"
             @answer="answerQuestion" @update-lives="answerQuestion" />
 
-          <!-- Falls eine Frage vorhanden ist -->
-          <div v-else-if="currentQuestion && textFinished">
-            <h3>{{ currentQuestion.text }}</h3>
-            <button v-for="choice in currentQuestion.choices" :key="choice.text" @click="answerQuestion(choice.correct)"
-              class="pixel-font">
-              {{ choice.text }}
-            </button>
-          </div>
+          
         </div>
 
         <div v-if="!isQuestionLoaded" class="text-box">

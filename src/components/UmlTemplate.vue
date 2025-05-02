@@ -7,7 +7,7 @@ import { getUmlTasks } from '../ts/minigame-rest-client';
 import { dummyConfig, Config } from '../ts/models';
 
 
-const currentTaskIndex = ref(0);
+const currentTaskIndex = ref(Math.floor(Math.random() * dummyConfig.umlTasks.length));
 const currentTask = ref(dummyConfig.umlTasks[currentTaskIndex.value]);
 const configurationId = ref("");
 
@@ -74,22 +74,23 @@ const handleSubmit = () => {
 
   if (isMatching) {
     console.log("Right answer!");
+    // Frage nur wechseln, wenn die Antwort richtig ist
+    const nextIndex = currentTaskIndex.value + 1;
+
+    if (nextIndex < dummyConfig.umlTasks.length) {
+      currentTaskIndex.value = nextIndex;
+      currentTask.value = dummyConfig.umlTasks[currentTaskIndex.value];
+      console.log("Next task:", currentTask.value.text);
+    } else {
+      console.log("No more tasks available");
+    }
   } else {
-    console.log("Wrong answer!");
+    console.log("Wrong answer! Try again.");
+   
   }
 
   // Emit event to parent (Story.vue)
   emit('update-lives', isMatching);
-
-  const nextIndex = currentTaskIndex.value + 1;
-
-  if (nextIndex < dummyConfig.umlTasks.length) {
-    currentTaskIndex.value = nextIndex;
-    currentTask.value = dummyConfig.umlTasks[currentTaskIndex.value];
-    console.log("Next task:", currentTask.value.text);
-  } else {
-    console.log("No more tasks available");
-  }
 
   graph.clear();
 };

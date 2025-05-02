@@ -35,7 +35,7 @@ export interface StoryNode {
     {
       id: "sneak_guard",
       text: "Choosing stealth over confrontation, you slip away into the reeds and wade into the cold, dark water, hoping to reach the other side unnoticed.",
-      questionId: "2",
+      questionId: "1",
       nextIdAfterQuestion: "fog",
       scene: "river",
     },
