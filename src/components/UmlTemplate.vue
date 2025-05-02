@@ -62,6 +62,10 @@ async function loadUmlTasks() {
 }
 
 
+const emit = defineEmits<{
+  (e: 'update-lives', isCorrect: boolean): void;
+}>();
+
 const handleSubmit = () => {
   const studentSolution = JSON.parse(convertGraphToJson());
   const correctSolution = JSON.parse(dummyConfig.umlTasks[currentTaskIndex.value].graph);
@@ -74,6 +78,9 @@ const handleSubmit = () => {
     console.log("Wrong answer!");
   }
 
+  // Emit event to parent (Story.vue)
+  emit('update-lives', isMatching);
+
   const nextIndex = currentTaskIndex.value + 1;
 
   if (nextIndex < dummyConfig.umlTasks.length) {
@@ -83,7 +90,10 @@ const handleSubmit = () => {
   } else {
     console.log("No more tasks available");
   }
+
+  graph.clear();
 };
+
 
 const compareGraphAttrs = (studentGraph: any, correctGraph: any): boolean => {
   const studentCells = studentGraph.cells;
@@ -679,7 +689,7 @@ onMounted(async () => {
 
 
 <template>
-  <div class="right" v-if="currentTask">
+  <div class="task-display" v-if="currentTask">
     <h3>Aufgabe: {{ currentTask.text }}</h3>
   </div>
   <div class="uml-wrapper" style="position: relative">
@@ -830,8 +840,7 @@ onMounted(async () => {
   height: 730px;
   border: 2px solid rgb(226, 220, 201);
   background: #f5f5f5;
-  overflow: scroll;
-
+  overflow: auto;
 }
 
 
@@ -934,4 +943,16 @@ onMounted(async () => {
 .reset-button:hover {
   background-color: #ec971f;
 }
+
+.task-display {
+  width: 100%;
+  max-height: 150px; 
+  overflow-y: auto;
+  background-color: #fff8dc;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
 </style>

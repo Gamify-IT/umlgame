@@ -15,21 +15,23 @@ const scene = ref("forest");
 const currentNodeId = ref("start");
 const showPopup = ref(false);
 const showMenu = ref(false);
-
+const feedbackMessage = ref("");
 const currentNode = computed(() => storyData.find((node) => node.id === currentNodeId.value));
 const lifeArray = computed(() => {
   return Array.from({ length: PlayerStats.maxLp }, (_, i) => i < PlayerStats.lp);
 });
 
+PlayerStats.lp = PlayerStats.maxLp;
+
 const makeChoice = (nextId: string) => {
   const nextNode = storyData.find((node) => node.id === nextId);
   if (nextNode?.scene) {
-    scene.value = nextNode.scene; 
+    scene.value = nextNode.scene;
   }
   currentNodeId.value = nextId;
 };
 
-const currentQuestion = computed(() => 
+const currentQuestion = computed(() =>
   dummyQuestions.find((q) => q.id === currentNode.value?.questionId)
 );
 
@@ -55,29 +57,34 @@ watch(
 function typeWriter(text: string, i: number) {
   if (i < text.length) {
     displayedText.value += text[i];
-    typingTimeout = setTimeout(() => typeWriter(text, i + 1), 40); 
+    typingTimeout = setTimeout(() => typeWriter(text, i + 1), 40);
   } else {
-    textFinished.value = true; 
+    textFinished.value = true;
     if (currentNode.value?.questionId) {
       setTimeout(() => {
         isQuestionLoaded.value = true;
-      }, 2000); 
+      }, 2000);
     } else {
       isQuestionLoaded.value = false;
-  }
+    }
   }
 }
 
-function answerQuestion  (isCorrect: boolean)  {
-if (isCorrect && currentNode.value?.nextIdAfterQuestion){
-  makeChoice(currentNode.value.nextIdAfterQuestion);
-} else {
-  PlayerStats.lp -= 1;
-  if (PlayerStats.lp < 0) PlayerStats.lp = 0;
+function answerQuestion(isCorrect: boolean) {
+  feedbackMessage.value = isCorrect ? "Right!" : "Wrong!";
+
+  if (isCorrect && currentNode.value?.nextIdAfterQuestion) {
+    makeChoice(currentNode.value.nextIdAfterQuestion);
+  } else {
+    PlayerStats.lp -= 1;
+    if (PlayerStats.lp < 0) PlayerStats.lp = 0;
     console.log(`Lebenspunkte: ${PlayerStats.lp}`);
-    
+  }
+  setTimeout(() => {
+    feedbackMessage.value = "";
+  }, 2000);
 }
-}
+
 
 function skipText() {
   if (!textFinished.value && currentNode.value?.text) {
@@ -87,10 +94,10 @@ function skipText() {
     if (currentNode.value?.questionId) {
       setTimeout(() => {
         isQuestionLoaded.value = true;
-      }, 2000); 
+      }, 2000);
     } else {
       isQuestionLoaded.value = false;
-  }
+    }
   }
 }
 
@@ -101,12 +108,12 @@ const exit = () => {
 
 
 const continueStory = () => {
-  showPopup.value = false; 
+  showPopup.value = false;
 };
 
 const goBackToMenu = () => {
- 
-  showPopup.value = false; 
+
+  showPopup.value = false;
 
   emit("go-back-to-menu");
 };
@@ -120,72 +127,64 @@ const goBackToMenu = () => {
     <button class="pixel-font exit-button" @click="exit">X</button>
 
     <div id="life-display">
-      <img
-    v-for="(full, index) in lifeArray"
-    :key="index"
-    :src="full ? 'src/assets/Icons/heart_full.jpg' : 'src/assets/Icons/heart_empty.jpg'"
-    class="heart-icon"
-  />
-</div>
-    <div class="story-container">
-      
-
-      <div v-if="currentNode?.questionId" class="question-box">
-    <!-- Falls es eine Uml Frage ist -->
-    <div class="question-text pixel-font" v-if="currentNode?.questionId === '2' && textFinished"></div>
-      <UmlTemplate
-          v-if="currentNode?.questionId === '2' && textFinished" 
-          :questionId="currentNode.questionId" 
-          @answer="answerQuestion"
-           
-        />
-
-      <!-- Falls eine Frage vorhanden ist -->
-      <div v-else-if="currentQuestion && textFinished">
-        <h3>{{ currentQuestion.text }}</h3>
-        <button
-          v-for="choice in currentQuestion.choices"
-          :key="choice.text"
-          @click="answerQuestion(choice.correct)"
-           class="pixel-font"
-        >
-          {{ choice.text }}
-        </button>
-      </div>
-
+      <img v-for="(full, index) in lifeArray" :key="index"
+        :src="full ? 'src/assets/Icons/heart_full.jpg' : 'src/assets/Icons/heart_empty.jpg'" class="heart-icon" />
     </div>
-    <div div v-if="!isQuestionLoaded" class="text-box">
+    <div class="story-container">
+
+      <div v-if="feedbackMessage" class="feedback-message">
+        {{ feedbackMessage }}
+      </div>
+      <div v-if="currentNode?.questionId" class="question-box">
+        <!-- Falls es eine Uml Frage ist -->
+        <div class="question-text pixel-font" v-if="currentNode?.questionId === '2' && textFinished"></div>
+        <UmlTemplate v-if="currentNode?.questionId === '2' && textFinished" :questionId="currentNode.questionId"
+          @answer="answerQuestion" @update-lives="answerQuestion" />
+
+
+
+        <!-- Falls eine Frage vorhanden ist -->
+        <div v-else-if="currentQuestion && textFinished">
+          <h3>{{ currentQuestion.text }}</h3>
+          <button v-for="choice in currentQuestion.choices" :key="choice.text" @click="answerQuestion(choice.correct)"
+            class="pixel-font">
+            {{ choice.text }}
+          </button>
+        </div>
+
+      </div>
+      <div div v-if="!isQuestionLoaded" class="text-box">
         <h2 class="pixel-font">{{ displayedText }}</h2>
         <button v-if="!textFinished" @click="skipText" class="pixel-font story-button">
-         Skip
+          Skip
         </button>
 
         <!-- Falls es normale Story-Entscheidungen gibt -->
         <div v-if="textFinished && currentNode?.choices">
-        
-          <button v-for="choice in currentNode.choices" :key="choice.nextId" @click="makeChoice(choice.nextId)"  class="pixel-font story-button">
+
+          <button v-for="choice in currentNode.choices" :key="choice.nextId" @click="makeChoice(choice.nextId)"
+            class="pixel-font story-button">
             {{ choice.text }}
           </button>
         </div>
       </div>
-      </div>
     </div>
+  </div>
 
-      <!-- Exit Button-->
-      <div v-if="showPopup" class="popup-overlay">
-      <div class="popup-content">
-        <p>Do you want to continue or leave the game?</p>
-        <button @click="continueStory">Continue</button>
-        <button @click="goBackToMenu">Exit</button>
-      </div>
+  <!-- Exit Button-->
+  <div v-if="showPopup" class="popup-overlay">
+    <div class="popup-content">
+      <p>Do you want to continue or leave the game?</p>
+      <button @click="continueStory">Continue</button>
+      <button @click="goBackToMenu">Exit</button>
     </div>
-    <App v-if="showMenu" />
- 
+  </div>
+  <App v-if="showMenu" />
+
 </template>
 
 
 <style scoped>
-
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -224,21 +223,22 @@ const goBackToMenu = () => {
   position: absolute;
   top: 20px;
   right: 20px;
-  background-color: #000; 
-  border: 2px solid #fff; 
-  color: #fff; 
+  background-color: #000;
+  border: 2px solid #fff;
+  color: #fff;
   font-size: 24px;
   width: 50px;
   height: 50px;
-  border-radius: 50%; 
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
 
 }
+
 .exit-button:hover {
-  background-color: #444; 
+  background-color: #444;
 }
 
 .background {
@@ -256,7 +256,7 @@ const goBackToMenu = () => {
   position: relative;
   width: 80%;
   max-width: 800px;
-  
+
 }
 
 .text-box {
@@ -268,15 +268,16 @@ const goBackToMenu = () => {
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
-  align-items: center; 
+  align-items: center;
   gap: 10px;
   color: white;
   z-index: 10;
-  
+
 }
+
 .question-box {
   position: absolute;
-  top: -420px; 
+  top: -420px;
   left: 50%;
   transform: translateX(-50%);
   width: 1200px;
@@ -294,9 +295,9 @@ const goBackToMenu = () => {
   position: absolute;
   top: 20px;
   left: 20px;
-  font-size: 40px; 
-  z-index: 1000; 
-  user-select: none; 
+  font-size: 40px;
+  z-index: 1000;
+  user-select: none;
 }
 
 .heart-icon {
@@ -326,11 +327,11 @@ const goBackToMenu = () => {
 
 .character-left {
   position: absolute;
-  bottom: 0px; 
-  left: 0; 
-  height: 700px; 
-  z-index: 1; 
-  image-rendering: auto; 
+  bottom: 0px;
+  left: 0;
+  height: 700px;
+  z-index: 1;
+  image-rendering: auto;
 }
 
 .skip-button {
@@ -344,6 +345,19 @@ const goBackToMenu = () => {
   font-size: 14px;
   cursor: pointer;
   z-index: 11;
+}
+
+.feedback-message {
+  position: absolute;
+  top: 80px; 
+  left: 20px;
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px;
+  border-radius: 10px;
+  z-index: 1000;
 }
 
 </style>
