@@ -61,6 +61,34 @@ const dummyUmlTasks: UmlTask[] = [
     ,
     "Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3, Beschreibung für Task 3, Beschreibung für Task 3, Beschreibung für Task 3 ,Beschreibung für Task 3 ,Beschreibung für Task 3",
     "typeC"
+  ),
+  new UmlTask(
+    "task4",
+    `{"cells":[{"type":"Rect","attrs":{},"position":{"x":365,"y":294.79998779296875},"size":{"width":100,"height":80},"angle":0,"id":"1c815b7a-4944-45f3-8103-29c0d1724ee4","z":1}]}`
+    ,
+    "4 ",
+    "typeA"
+  ),
+  new UmlTask(
+    "task5",
+    `{"cells":[{"type":"Rect","attrs":{},"position":{"x":365,"y":294.79998779296875},"size":{"width":100,"height":80},"angle":0,"id":"1c815b7a-4944-45f3-8103-29c0d1724ee4","z":1}]}`
+    ,
+    "5",
+    "typeB"
+  ),
+  new UmlTask(
+    "task6",
+    `{"cells":[{"type":"Rect","attrs":{},"position":{"x":365,"y":294.79998779296875},"size":{"width":100,"height":80},"angle":0,"id":"1c815b7a-4944-45f3-8103-29c0d1724ee4","z":1}]}`
+    ,
+    "6",
+    "typeC"
+  ),
+  new UmlTask(
+    "task7",
+    `{"cells":[{"type":"Rect","attrs":{},"position":{"x":365,"y":294.79998779296875},"size":{"width":100,"height":80},"angle":0,"id":"1c815b7a-4944-45f3-8103-29c0d1724ee4","z":1}]}`
+    ,
+    "7",
+    "typeC"
   )
 ];
 

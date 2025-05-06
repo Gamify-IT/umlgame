@@ -1,21 +1,18 @@
 <script setup lang="ts">
 import { dia, shapes } from '@joint/core';
-import { onMounted, ref, defineProps, nextTick } from "vue";
+import { onMounted, ref, defineProps, nextTick, watch } from "vue";
 import { BFormInput, BFormTextarea } from "bootstrap-vue-3";
 import { CustRect, InterfaceRect, AbstractRect, EnumRect } from '../ts/links';
 import { getUmlTasks } from '../ts/minigame-rest-client';
 import { dummyConfig, Config } from '../ts/models';
 
 
-const currentTaskIndex = ref(Math.floor(Math.random() * dummyConfig.umlTasks.length));
-const currentTask = ref(dummyConfig.umlTasks[currentTaskIndex.value]);
 const configurationId = ref("");
 
 const namespace = shapes;
 const graph = new dia.Graph({}, { cellNamespace: namespace });
 const paperContainer = ref<HTMLElement | null>(null);
 const paletteContainer = ref<HTMLElement | null>(null);
-const props = defineProps<{ questionId: string }>();
 
 const selectedElement = ref<dia.Element | null>(null);
 const selectedLink = ref<dia.Link | null>(null);
@@ -41,6 +38,13 @@ const classColors = {
 
 let config: Config;
 
+const props = defineProps<{
+  currentIndex: number;
+}>();
+
+const currentTask = ref(dummyConfig.umlTasks[props.currentIndex]);
+
+
 async function loadUmlTasks() {
   try {
     let locationParts = window.location.toString().split("/");
@@ -61,117 +65,120 @@ async function loadUmlTasks() {
   }
 }
 
+watch(() => props.currentIndex, (newIndex) => {
+  currentTask.value = dummyConfig.umlTasks[newIndex];
+});
+
+
+onMounted(async () => {
+  const config = await loadUmlTasks();
+  if (config) {
+    emit('task-length-known', config.umlTasks.length);
+  }
+});
 
 const emit = defineEmits<{
-  (e: 'update-lives', isCorrect: boolean): void;
+  (event: "task-length-known", length: number): void;
+  (event: "update-lives", isCorrect: boolean): void;
+(event: "correct-answer", isCorrect: boolean): void;
 }>();
+
 
 const handleSubmit = () => {
   const studentSolution = JSON.parse(convertGraphToJson());
-  const correctSolution = JSON.parse(dummyConfig.umlTasks[currentTaskIndex.value].graph);
+  const correctSolution = JSON.parse(dummyConfig.umlTasks[props.currentIndex].graph);
 
   const isMatching = compareGraphAttrs(studentSolution, correctSolution);
 
   if (isMatching) {
-    console.log("Right answer!");
-    // Frage nur wechseln, wenn die Antwort richtig ist
-    const nextIndex = currentTaskIndex.value + 1;
+  emit("correct-answer", true); 
+}
 
-    if (nextIndex < dummyConfig.umlTasks.length) {
-      currentTaskIndex.value = nextIndex;
-      currentTask.value = dummyConfig.umlTasks[currentTaskIndex.value];
-      console.log("Next task:", currentTask.value.text);
-    } else {
-      console.log("No more tasks available");
-    }
-  } else {
-    console.log("Wrong answer! Try again.");
-   
-  }
-
-  // Emit event to parent (Story.vue)
   emit('update-lives', isMatching);
 
   graph.clear();
 };
 
 
-const compareGraphAttrs = (studentGraph: any, correctGraph: any): boolean => {
+type GraphCell = {
+  id: string;
+  type: string;
+  attrs?: any;
+  source?: { id: string };
+  target?: { id: string };
+  labels?: any[];
+};
+
+type Graph = {
+  cells: GraphCell[];
+};
+
+const compareGraphAttrs = (studentGraph: Graph, correctGraph: Graph): boolean => {
   const studentCells = studentGraph.cells;
   const correctCells = correctGraph.cells;
 
-  const isRectCell = (cell: any) => cell.type?.includes("Rect");
-  const isLinkCell = (cell: any) => cell.type === "standard.Link";
+  if (studentCells.length !== correctCells.length) return false;
 
-  const getCellById = (cells: any[], id: string) => cells.find(c => c.id === id);
+  const isRectCell = (cell: GraphCell) => cell.type?.includes("Rect");
+  const isLinkCell = (cell: GraphCell) => cell.type === "standard.Link";
 
-  const getLabels = (cell: any): [string, string, string] => [
+  const getLabels = (cell: GraphCell): [string, string, string] => [
     cell.attrs?.label?.text ?? "",
     cell.attrs?.secondaryLabel?.text ?? "",
     cell.attrs?.thirdLabel?.text ?? "",
   ];
 
+  const extractLinkTexts = (link: GraphCell): string[] =>
+    (link.labels || [])
+      .map((label: any) => label?.attrs?.text?.text)
+      .filter(Boolean)
+      .sort();
+
+  const getCellSignature = (cell: GraphCell): string =>
+    `${cell.type}|${getLabels(cell).join("|")}`;
+
+  const getLinkSignature = (link: GraphCell, allCells: GraphCell[]): string | null => {
+    const getCellById = (id: string) => allCells.find(c => c.id === id);
+    const source = getCellById(link.source?.id ?? "");
+    const target = getCellById(link.target?.id ?? "");
+    if (!source || !target) return null;
+
+    const sourceLabel = getLabels(source).join("|");
+    const targetLabel = getLabels(target).join("|");
+    const labels = extractLinkTexts(link).join("|");
+
+    return `${sourceLabel}->${targetLabel}|${labels}`;
+  };
+
   const correctRects = correctCells.filter(isRectCell);
   const studentRects = studentCells.filter(isRectCell);
 
-  for (const correctCell of correctRects) {
-    const [label1, label2, label3] = getLabels(correctCell);
-    const correctType = correctCell.type;
+  if (correctRects.length !== studentRects.length) return false;
 
-    const match = studentRects.find((cell: any) => {
-      const [s1, s2, s3] = getLabels(cell);
-      return (
-        label1 === s1 &&
-        label2 === s2 &&
-        label3 === s3 &&
-        cell.type === correctType
-      );
-    });
+  const correctRectSignatures = correctRects.map(getCellSignature).sort();
+  const studentRectSignatures = studentRects.map(getCellSignature).sort();
 
-    if (!match) return false;
+  if (JSON.stringify(correctRectSignatures) !== JSON.stringify(studentRectSignatures)) {
+    return false;
   }
 
   const correctLinks = correctCells.filter(isLinkCell);
   const studentLinks = studentCells.filter(isLinkCell);
 
-  const extractLinkTexts = (link: any): string[] =>
-    (link.labels || []).map((label: any) => label?.attrs?.text?.text).filter(Boolean).sort();
+  if (correctLinks.length !== studentLinks.length) return false;
 
-  const findMatchingLink = (correctLink: any): boolean => {
-    const sourceCorrect = getCellById(correctCells, correctLink.source.id);
-    const targetCorrect = getCellById(correctCells, correctLink.target.id);
-    if (!sourceCorrect || !targetCorrect) return false;
+  const correctLinkSignatures = correctLinks
+    .map(link => getLinkSignature(link, correctCells))
+    .filter((s): s is string => s !== null)
+    .sort();
 
-    const sourceLabels = getLabels(sourceCorrect).join("|");
-    const targetLabels = getLabels(targetCorrect).join("|");
-    const correctTextLabels = extractLinkTexts(correctLink).join("|");
+  const studentLinkSignatures = studentLinks
+    .map(link => getLinkSignature(link, studentCells))
+    .filter((s): s is string => s !== null)
+    .sort();
 
-    return studentLinks.some((studentLink: any) => {
-      const sourceStudent = getCellById(studentCells, studentLink.source.id);
-      const targetStudent = getCellById(studentCells, studentLink.target.id);
-      if (!sourceStudent || !targetStudent) return false;
-
-      const sourceStudentLabels = getLabels(sourceStudent).join("|");
-      const targetStudentLabels = getLabels(targetStudent).join("|");
-      const studentTextLabels = extractLinkTexts(studentLink).join("|");
-
-      return (
-        sourceLabels === sourceStudentLabels &&
-        targetLabels === targetStudentLabels &&
-        correctTextLabels === studentTextLabels
-      );
-    });
-  };
-
-  for (const correctLink of correctLinks) {
-    if (!findMatchingLink(correctLink)) return false;
-  }
-
-  return true;
+  return JSON.stringify(correctLinkSignatures) === JSON.stringify(studentLinkSignatures);
 };
-
-
-
 
 function isLinkType(type: string): type is LinkType {
   return ["dependency", "association", "aggregation", "composition", "generalization"].includes(type);

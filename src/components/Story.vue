@@ -10,6 +10,7 @@ import gameOverSound from '../assets/gameOver.mp3';
 
 
 const gameOverAudio = new Audio(gameOverSound);
+const currentQuestionIndex = ref(0);
 
 const emit = defineEmits<{
   (event: 'go-back-to-menu'): void;
@@ -83,6 +84,10 @@ function typeWriter(text: string, i: number) {
   }
 }
 
+function handleCorrectAnswer() {
+  currentQuestionIndex.value++;
+}
+
 function answerQuestion(isCorrect: boolean) {
   feedbackMessage.value = isCorrect ? "Right!" : "Wrong!";
 
@@ -145,7 +150,6 @@ const goBackToMenu = () => {
   emit("go-back-to-menu");
 };
 
-
 </script>
 
 <template>
@@ -161,7 +165,7 @@ const goBackToMenu = () => {
     <div class="story-container">
       <div v-if="isGameOver" class="game-over-screen">
         <div class="game-over-hearts">
-          <img v-for="(empty, index) in emptyLifeArray" :key="'empty-' + index" :src="heartEmpty" class="heart-icon" />
+          <img v-for="(index) in emptyLifeArray" :key="'empty-' + index" :src="heartEmpty" class="heart-icon" />
         </div>
         <h1 class="pixel-font game-over-text">GAME OVER</h1>
         <button @click="resetGame" class="pixel-font game-over-button" style="margin: 10px;">
@@ -182,8 +186,9 @@ const goBackToMenu = () => {
         <div v-if="currentNode?.questionId" class="question-box">
           <!-- Falls es eine Uml Frage ist -->
           <div class="question-text pixel-font" v-if="currentNode?.questionId && textFinished"></div>
-          <UmlTemplate v-if="currentNode?.questionId && textFinished" :questionId="currentNode.questionId"
-            @answer="answerQuestion" @update-lives="answerQuestion" />
+          <UmlTemplate v-if="textFinished" :currentIndex="currentQuestionIndex" @correct-answer="handleCorrectAnswer"
+            @update-lives="answerQuestion" />
+
 
 
         </div>
@@ -209,7 +214,7 @@ const goBackToMenu = () => {
     <div v-if="showPopup" class="popup-overlay">
       <div class="popup-content">
         <p>Do you want to continue or leave the game?</p>
-        <button @click="continueStory">Continue</button>
+        <button @click="continueStory" style="margin-right: 1rem;">Continue</button>
         <button @click="goBackToMenu">Exit</button>
       </div>
     </div>
