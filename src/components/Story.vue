@@ -6,8 +6,10 @@ import UmlTemplate from "../components/UmlTemplate.vue";
 import heroImage from "../assets/Characters/Hero.jpg";
 import App from './App.vue';
 import heartEmpty from '../assets/Icons/heart_empty.jpg';
+import gameOverSound from '../assets/gameOver.mp3';
 
 
+const gameOverAudio = new Audio(gameOverSound);
 
 const emit = defineEmits<{
   (event: 'go-back-to-menu'): void;
@@ -45,6 +47,13 @@ const emptyLifeArray = computed(() =>
 );
 
 let typingTimeout: ReturnType<typeof setTimeout> | null = null;
+
+watch(isGameOver, (newVal) => {
+  if (newVal) {
+    gameOverAudio.currentTime = 0;
+    gameOverAudio.play();
+  }
+});
 
 watch(
   () => currentNode.value?.text,
@@ -105,6 +114,20 @@ function skipText() {
   }
 }
 
+const resetGame = () => {
+  PlayerStats.lp = PlayerStats.maxLp;
+  currentNodeId.value = "start";
+  scene.value = "forest";
+  displayedText.value = "";
+  textFinished.value = false;
+  isQuestionLoaded.value = false;
+  feedbackMessage.value = "";
+};
+
+const leaveGame = () => {
+  console.log("Leave Game clicked");
+};
+
 
 const exit = () => {
   showPopup.value = true;
@@ -141,7 +164,12 @@ const goBackToMenu = () => {
           <img v-for="(empty, index) in emptyLifeArray" :key="'empty-' + index" :src="heartEmpty" class="heart-icon" />
         </div>
         <h1 class="pixel-font game-over-text">GAME OVER</h1>
-        <button @click="goBackToMenu" class="pixel-font game-over-button">Back to Menu</button>
+        <button @click="resetGame" class="pixel-font game-over-button" style="margin: 10px;">
+          Try Again
+        </button>
+        <button @click="leaveGame" class="pixel-font game-over-button" style="margin: 10px;">
+          Leave Game
+        </button>
       </div>
 
 
@@ -153,11 +181,11 @@ const goBackToMenu = () => {
 
         <div v-if="currentNode?.questionId" class="question-box">
           <!-- Falls es eine Uml Frage ist -->
-          <div class="question-text pixel-font" v-if="currentNode?.questionId  && textFinished"></div>
+          <div class="question-text pixel-font" v-if="currentNode?.questionId && textFinished"></div>
           <UmlTemplate v-if="currentNode?.questionId && textFinished" :questionId="currentNode.questionId"
             @answer="answerQuestion" @update-lives="answerQuestion" />
 
-          
+
         </div>
 
         <div v-if="!isQuestionLoaded" class="text-box">

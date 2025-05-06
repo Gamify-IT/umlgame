@@ -45,21 +45,21 @@ const dummyUmlTasks: UmlTask[] = [
     "task1",
     `{"cells":[{"type":"Rect","attrs":{},"position":{"x":365,"y":294.79998779296875},"size":{"width":100,"height":80},"angle":0,"id":"1c815b7a-4944-45f3-8103-29c0d1724ee4","z":1}]}`
     ,
-    "Beschreibung für Task 1",
+    "Beschreibung für Task 1 Beschreibung für Task 1 Beschreibung für Task 1Beschreibung für Task 1Beschreibung für Task 1Beschreibung für Task 1 Beschreibung für Task 1 Beschreibung für Task 1 Beschreibung für Task 1Beschreibung für Task 1Beschreibung für Task 1Beschreibung für Task 1 ",
     "typeA"
   ),
   new UmlTask(
     "task2",
     `{"cells":[{"type":"Rect","attrs":{},"position":{"x":365,"y":294.79998779296875},"size":{"width":100,"height":80},"angle":0,"id":"1c815b7a-4944-45f3-8103-29c0d1724ee4","z":1}]}`
     ,
-    "Beschreibung für Task 2",
+    "Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2,Beschreibung für Task 2",
     "typeB"
   ),
   new UmlTask(
     "task3",
     `{"cells":[{"type":"Rect","attrs":{},"position":{"x":365,"y":294.79998779296875},"size":{"width":100,"height":80},"angle":0,"id":"1c815b7a-4944-45f3-8103-29c0d1724ee4","z":1}]}`
     ,
-    "Beschreibung für Task 3",
+    "Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3,Beschreibung für Task 3, Beschreibung für Task 3, Beschreibung für Task 3, Beschreibung für Task 3 ,Beschreibung für Task 3 ,Beschreibung für Task 3",
     "typeC"
   )
 ];
