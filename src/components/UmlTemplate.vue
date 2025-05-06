@@ -3,7 +3,6 @@ import { dia, shapes } from '@joint/core';
 import { onMounted, ref, defineProps, nextTick, watch } from "vue";
 import { BFormInput, BFormTextarea } from "bootstrap-vue-3";
 import { CustRect, InterfaceRect, AbstractRect, EnumRect } from '../ts/links';
-import { getUmlTasks } from '../ts/minigame-rest-client';
 import { dummyConfig, Config } from '../ts/models';
 
 
@@ -80,7 +79,7 @@ onMounted(async () => {
 const emit = defineEmits<{
   (event: "task-length-known", length: number): void;
   (event: "update-lives", isCorrect: boolean): void;
-(event: "correct-answer", isCorrect: boolean): void;
+  (event: "correct-answer", isCorrect: boolean): void;
 }>();
 
 
@@ -91,8 +90,8 @@ const handleSubmit = () => {
   const isMatching = compareGraphAttrs(studentSolution, correctSolution);
 
   if (isMatching) {
-  emit("correct-answer", true); 
-}
+    emit("correct-answer", true);
+  }
 
   emit('update-lives', isMatching);
 
@@ -184,16 +183,23 @@ function isLinkType(type: string): type is LinkType {
   return ["dependency", "association", "aggregation", "composition", "generalization"].includes(type);
 }
 
+
 function handleLinkClick(linkView: dia.LinkView) {
   selectedLink.value = linkView.model;
   selectedElement.value = null;
+
+  const relationType = linkView.model.get('relationType') as LinkType | undefined;
+  currentLinkType.value = relationType ?? null;
 
   const labels = linkView.model.get('labels') || [];
   linkSourceMultiplicity.value = labels[0]?.attrs?.text?.text || '';
   linkSourceRole.value = labels[1]?.attrs?.text?.text || '';
   linkTargetMultiplicity.value = labels[3]?.attrs?.text?.text || '';
   linkTargetRole.value = labels[4]?.attrs?.text?.text || '';
+  linkArrowLabel.value = labels[2]?.attrs?.text?.text || '';
 }
+
+
 
 
 function deleteRelation() {
@@ -583,6 +589,8 @@ onMounted(async () => {
             }
 
             graph.addCell(link);
+            link.set('relationType', rawType);
+            currentLinkType.value = rawType as LinkType;
 
             link.appendLabel({
               attrs: {
@@ -770,30 +778,36 @@ onMounted(async () => {
         Delete Relation
       </b-button>
 
-      <label>
-        Source Multiplicity:
-        <b-form-input v-model="linkSourceMultiplicity" @input="updateLinkLabels" />
-      </label>
+      <div v-if="currentLinkType !== 'generalization'">
+        <label>
+          Source Multiplicity:
+          <b-form-input v-model="linkSourceMultiplicity" @input="updateLinkLabels" />
+        </label>
 
-      <label>
-        Source Role:
-        <b-form-input v-model="linkSourceRole" @input="updateLinkLabels" />
-      </label>
+        <label>
+          Source Role:
+          <b-form-input v-model="linkSourceRole" @input="updateLinkLabels" />
+        </label>
 
-      <label>
-        Target Multiplicity:
-        <b-form-input v-model="linkTargetMultiplicity" @input="updateLinkLabels" />
-      </label>
+        <label>
+          Target Multiplicity:
+          <b-form-input v-model="linkTargetMultiplicity" @input="updateLinkLabels" />
+        </label>
 
-      <label>
-        Target Role:
-        <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
-      </label>
-      <label>
-        Description:
-        <b-form-input v-model="linkArrowLabel" @input="updateLinkLabels" />
-      </label>
+        <label>
+          Target Role:
+          <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
+        </label>
+
+        <label>
+          Description:
+          <b-form-input v-model="linkArrowLabel" @input="updateLinkLabels" />
+        </label>
+      </div>
     </div>
+
+
+
 
   </div>
 
@@ -954,7 +968,7 @@ onMounted(async () => {
 
 .task-display {
   width: 100%;
-  max-height: 150px; 
+  max-height: 150px;
   overflow-y: auto;
   background-color: #fff8dc;
   border: 1px solid #ccc;
@@ -962,5 +976,4 @@ onMounted(async () => {
   box-sizing: border-box;
   margin-bottom: 10px;
 }
-
 </style>
