@@ -7,6 +7,9 @@ import heroImage from "../assets/Characters/Hero.jpg";
 import App from './App.vue';
 import heartEmpty from '../assets/Icons/heart_empty.jpg';
 import gameOverSound from '../assets/gameOver.mp3';
+import errorSoundFile from '../assets/errorSound.mp3';
+import successSoundFile from '../assets/successSound.mp3';
+
 
 
 const gameOverAudio = new Audio(gameOverSound);
@@ -36,6 +39,8 @@ const makeChoice = (nextId: string) => {
 };
 
 
+const errorAudio = new Audio(errorSoundFile);
+const successAudio = new Audio(successSoundFile);
 
 const sceneBackground = computed(() => `scene-${scene.value}`);
 const displayedText = ref("");
@@ -92,11 +97,15 @@ function answerQuestion(isCorrect: boolean) {
   feedbackMessage.value = isCorrect ? "Right!" : "Wrong!";
 
   if (isCorrect && currentNode.value?.nextIdAfterQuestion) {
+    successAudio.currentTime = 0;
+    successAudio.play();
     makeChoice(currentNode.value.nextIdAfterQuestion);
   } else {
     PlayerStats.lp -= 1;
     if (PlayerStats.lp < 0) PlayerStats.lp = 0;
     console.log(`Lebenspunkte: ${PlayerStats.lp}`);
+    errorAudio.currentTime = 0;
+    errorAudio.play();
   }
   setTimeout(() => {
     feedbackMessage.value = "";
@@ -127,7 +136,9 @@ const resetGame = () => {
   textFinished.value = false;
   isQuestionLoaded.value = false;
   feedbackMessage.value = "";
+  currentQuestionIndex.value = 0;
 };
+
 
 const leaveGame = () => {
   console.log("Leave Game clicked");

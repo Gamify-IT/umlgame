@@ -37,10 +37,6 @@ function leaveGame() {
   window.close()
 }
 
-function goBackToMenu() {
-  showMenu.value = true;
-  showStory.value = false;
-}
 </script>
 
 <template>
