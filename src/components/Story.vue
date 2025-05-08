@@ -13,6 +13,7 @@ import successSoundFile from '../assets/successSound.mp3';
 
 
 const gameOverAudio = new Audio(gameOverSound);
+gameOverAudio.volume = 0.4;
 const currentQuestionIndex = ref(0);
 
 const emit = defineEmits<{
@@ -40,7 +41,9 @@ const makeChoice = (nextId: string) => {
 
 
 const errorAudio = new Audio(errorSoundFile);
+errorAudio.volume = 0.3;
 const successAudio = new Audio(successSoundFile);
+successAudio.volume = 0.3;
 
 const sceneBackground = computed(() => `scene-${scene.value}`);
 const displayedText = ref("");
