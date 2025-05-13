@@ -8,7 +8,7 @@ import App from './App.vue';
 import heartEmpty from '../assets/Icons/heart_empty.jpg';
 import gameOverSound from '../assets/gameOver.mp3';
 import errorSoundFile from '../assets/errorSound.mp3';
-import successSoundFile from '../assets/successSound.mp3';
+import successSoundFile from '../assets/winSound.mp3';
 
 
 

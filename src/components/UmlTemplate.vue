@@ -188,15 +188,12 @@ function handleLinkClick(linkView: dia.LinkView) {
   selectedLink.value = linkView.model;
   selectedElement.value = null;
 
-  const relationType = linkView.model.get('relationType') as LinkType | undefined;
-  currentLinkType.value = relationType ?? null;
 
   const labels = linkView.model.get('labels') || [];
   linkSourceMultiplicity.value = labels[0]?.attrs?.text?.text || '';
   linkSourceRole.value = labels[1]?.attrs?.text?.text || '';
   linkTargetMultiplicity.value = labels[3]?.attrs?.text?.text || '';
   linkTargetRole.value = labels[4]?.attrs?.text?.text || '';
-  linkArrowLabel.value = labels[2]?.attrs?.text?.text || '';
 }
 
 
@@ -589,8 +586,7 @@ onMounted(async () => {
             }
 
             graph.addCell(link);
-            link.set('relationType', rawType);
-            currentLinkType.value = rawType as LinkType;
+
 
             link.appendLabel({
               attrs: {
@@ -798,7 +794,6 @@ onMounted(async () => {
           Target Role:
           <b-form-input v-model="linkTargetRole" @input="updateLinkLabels" />
         </label>
-
         <label>
           Description:
           <b-form-input v-model="linkArrowLabel" @input="updateLinkLabels" />
