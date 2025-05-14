@@ -1,7 +1,6 @@
 /**
  * This file defines all the needed type-correct models
  */
-
 export class UmlTask {
   id: string;
   graph: string;
@@ -94,4 +93,10 @@ const dummyUmlTasks: UmlTask[] = [
 
 export const dummyConfig = new Config("config123", dummyUmlTasks, 50);
 
-console.log(JSON.stringify(dummyConfig, null, 2));
+export class GameResultDTO {
+  public constructor(
+    public configurationAsUUID: string,
+    public score: number,
+    public rewards: number
+  ) {}
+}

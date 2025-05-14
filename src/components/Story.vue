@@ -9,12 +9,14 @@ import heartEmpty from '../assets/Icons/heart_empty.jpg';
 import gameOverSound from '../assets/gameOver.mp3';
 import errorSoundFile from '../assets/errorSound.mp3';
 import successSoundFile from '../assets/winSound.mp3';
+import store from '../store';
 
 
 
 const gameOverAudio = new Audio(gameOverSound);
 gameOverAudio.volume = 0.4;
 const currentQuestionIndex = ref(0);
+const livesUsed = ref(0);
 
 const emit = defineEmits<{
   (event: 'go-back-to-menu'): void;
@@ -76,6 +78,10 @@ watch(
   { immediate: true }
 );
 
+const showEndscreen = computed(() =>
+  currentNode.value?.id === 'goodEnding' || currentNode.value?.id === 'badEnding'
+);
+
 function typeWriter(text: string, i: number) {
   if (i < text.length) {
     displayedText.value += text[i];
@@ -106,6 +112,8 @@ function answerQuestion(isCorrect: boolean) {
   } else {
     PlayerStats.lp -= 1;
     if (PlayerStats.lp < 0) PlayerStats.lp = 0;
+    livesUsed.value += 1;
+    if (PlayerStats.lp < 0) PlayerStats.lp = 0;
     console.log(`Lebenspunkte: ${PlayerStats.lp}`);
     errorAudio.currentTime = 0;
     errorAudio.play();
@@ -133,6 +141,7 @@ function skipText() {
 
 const resetGame = () => {
   PlayerStats.lp = PlayerStats.maxLp;
+  livesUsed.value = 0;
   currentNodeId.value = "start";
   scene.value = "forest";
   displayedText.value = "";
@@ -234,6 +243,39 @@ const goBackToMenu = () => {
     </div>
     <App v-if="showMenu" />
   </div>
+  <div v-if="showEndscreen" class="game-over-screen">
+    <h1 class="pixel-font game-over-text">
+      <h1 v-if="currentNode?.id === 'goodEnding'" class="pixel-font game-over-text">
+        GOOD ENDING
+      </h1>
+      <h1 v-else-if="currentNode?.id === 'badEnding'" class="pixel-font game-over-text">
+        BAD ENDING
+      </h1>
+
+    </h1>
+
+    <p class="pixel-font" style="font-size: 24px; color: white;">
+      Lives used: {{ livesUsed }}
+    </p>
+
+    <p class="pixel-font" style="font-size: 24px; color: white;">
+      Score: {{ store.state.score }}
+    </p>
+
+    <p class="pixel-font" style="font-size: 24px; color: white;">
+      Rewards: {{ store.state.rewards }}
+    </p>
+
+    <button @click="resetGame" class="pixel-font game-over-button" style="margin: 10px;">
+      Play Again
+    </button>
+
+    <button @click="leaveGame" class="pixel-font game-over-button" style="margin: 10px;">
+      Leave Game
+    </button>
+  </div>
+
+
 </template>
 
 
