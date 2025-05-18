@@ -4,10 +4,7 @@ import { onMounted, ref, defineProps, nextTick, watch } from "vue";
 import { BFormInput, BFormTextarea } from "bootstrap-vue-3";
 import { CustRect, InterfaceRect, AbstractRect, EnumRect } from '../ts/links';
 import { dummyConfig, Config } from '../ts/models';
-import store from '../store';
 import axios from "axios";
-import type { AxiosResponse } from "axios";
-import config from "../config";
 
 const configurationId = ref("");
 
