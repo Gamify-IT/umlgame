@@ -5,8 +5,9 @@ import { BFormInput, BFormTextarea } from "bootstrap-vue-3";
 import { CustRect, InterfaceRect, AbstractRect, EnumRect } from '../ts/links';
 import { dummyConfig, Config } from '../ts/models';
 import store from '../store';
-
-
+import axios from "axios";
+import type { AxiosResponse } from "axios";
+import config from "../config";
 
 const configurationId = ref("");
 
@@ -58,7 +59,12 @@ async function loadUmlTasks() {
     // config = response.data;
 
     // Dummy-Daten für den Test
-    config = dummyConfig;
+    axios.get(`/minigames/umlgame/api/v1/configurations`).then((response) => {
+      config = response.data;
+    })
+
+
+    //config = dummyConfig;
 
     console.log("Loaded Config with UML Tasks:", config);
     return config;
